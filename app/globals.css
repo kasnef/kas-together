@@ -1,0 +1,210 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Updated to warm, relaxing orange/amber color scheme for light mode */
+  --background: #fefbf3;
+  --foreground: #451a03;
+  --card: #ffffff;
+  --card-foreground: #451a03;
+  --popover: #ffffff;
+  --popover-foreground: #451a03;
+  --primary: #ea580c;
+  --primary-foreground: #ffffff;
+  --secondary: #fed7aa;
+  --secondary-foreground: #9a3412;
+  --muted: #fed7aa;
+  --muted-foreground: #9a3412;
+  --accent: #ffedd5;
+  --accent-foreground: #9a3412;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #fed7aa;
+  --input: #ffffff;
+  --ring: rgba(234, 88, 12, 0.5);
+  --chart-1: #ea580c;
+  --chart-2: #f59e0b;
+  --chart-3: #eab308;
+  --chart-4: #84cc16;
+  --chart-5: #06b6d4;
+  --radius: 0.5rem;
+  --sidebar: #ffedd5;
+  --sidebar-foreground: #451a03;
+  --sidebar-primary: #ea580c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fed7aa;
+  --sidebar-accent-foreground: #9a3412;
+  --sidebar-border: #fed7aa;
+  --sidebar-ring: rgba(234, 88, 12, 0.5);
+}
+
+.dark {
+  /* Updated dark theme with softer, less bright colors for better eye comfort */
+  --background: #0f0a08;
+  --foreground: #d4b896;
+  --card: #1a1210;
+  --card-foreground: #d4b896;
+  --popover: #1a1210;
+  --popover-foreground: #d4b896;
+  --primary: #d97706;
+  --primary-foreground: #ffffff;
+  --secondary: #2d1b13;
+  --secondary-foreground: #d4b896;
+  --muted: #2d1b13;
+  --muted-foreground: #92400e;
+  --accent: #2d1b13;
+  --accent-foreground: #d4b896;
+  --destructive: #b91c1c;
+  --destructive-foreground: #d4b896;
+  --border: #2d1b13;
+  --input: #1a1210;
+  --ring: rgba(217, 119, 6, 0.3);
+  --chart-1: #d97706;
+  --chart-2: #f59e0b;
+  --chart-3: #eab308;
+  --chart-4: #84cc16;
+  --chart-5: #06b6d4;
+  --sidebar: #1a1210;
+  --sidebar-foreground: #d4b896;
+  --sidebar-primary: #d97706;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2d1b13;
+  --sidebar-accent-foreground: #d4b896;
+  --sidebar-border: #2d1b13;
+  --sidebar-ring: rgba(217, 119, 6, 0.3);
+}
+
+@theme inline {
+  /* Updated pixel font configuration using CSS variable */
+  --font-pixel: var(--font-pixel);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Updated to use pixel font variable */
+    font-family: var(--font-pixel), monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    /* Added smooth transition for theme changes */
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-pixel), monospace;
+    font-weight: normal;
+  }
+
+  .pixel-border {
+    border-image: url("data:image/svg+xml,%3csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m1,1 l0,0 l98,0 l0,98 l-98,0 z' fill='none' stroke='%23ea580c' stroke-width='2'/%3e%3c/svg%3e")
+      2;
+  }
+
+  .lofi-glow {
+    box-shadow: 0 0 20px rgba(234, 88, 12, 0.3);
+  }
+
+  .video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.2;
+  }
+
+  /* Updated glass effect to work with both themes */
+  .glass-effect {
+    backdrop-filter: blur(10px);
+    /* Updated glass effect with warm tones */
+    background: rgba(254, 251, 243, 0.85);
+    border: 1px solid rgba(254, 215, 170, 0.3);
+  }
+
+  .dark .glass-effect {
+    background: rgba(45, 27, 19, 0.85);
+    border: 1px solid rgba(69, 26, 3, 0.3);
+  }
+
+  /* Added Vietnamese font support and pixel font utility class */
+  .font-pixel {
+    font-family: var(--font-pixel), monospace;
+  }
+
+  /* Custom scrollbar styling for both themes */
+  /* Custom scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--muted);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-foreground);
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--muted);
+  }
+}
