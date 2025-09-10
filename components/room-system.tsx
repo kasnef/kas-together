@@ -1,41 +1,53 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { MemeModal } from "@/components/meme-modal"
-import { NotificationModal } from "@/components/notification-modal"
-import { Plus, Search, Users, Music, MessageCircle, Send, Smile, Zap, Gift, Lock, Eye } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { MemeModal } from "@/components/meme-modal";
+import { NotificationModal } from "@/components/notification-modal";
+import {
+  Plus,
+  Search,
+  Users,
+  Music,
+  MessageCircle,
+  Send,
+  Smile,
+  Zap,
+  Gift,
+  Lock,
+  Eye,
+} from "lucide-react";
 
 interface Room {
-  id: string
-  name: string
-  description: string
-  userCount: number
-  currentTrack: string
-  isPrivate: boolean
-  password?: string
+  id: string;
+  name: string;
+  description: string;
+  userCount: number;
+  currentTrack: string;
+  isPrivate: boolean;
+  password?: string;
 }
 
 interface Message {
-  id: string
-  user: string
-  content: string
-  timestamp: Date
-  type: "message" | "meme" | "auto-meme"
+  id: string;
+  user: string;
+  content: string;
+  timestamp: Date;
+  type: "message" | "meme" | "auto-meme";
 }
 
 interface User {
-  id: string
-  name: string
-  isOnline: boolean
+  id: string;
+  name: string;
+  isOnline: boolean;
 }
 
 export function RoomSystem() {
-  const [currentRoom, setCurrentRoom] = useState<Room | null>(null)
+  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [rooms, setRooms] = useState<Room[]>([
     {
       id: "1",
@@ -61,7 +73,7 @@ export function RoomSystem() {
       currentTrack: "Synthwave Dreams",
       isPrivate: false,
     },
-  ])
+  ]);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -77,31 +89,31 @@ export function RoomSystem() {
       timestamp: new Date(),
       type: "message",
     },
-  ])
+  ]);
   const [users] = useState<User[]>([
     { id: "1", name: "Alex", isOnline: true },
     { id: "2", name: "Sarah", isOnline: true },
     { id: "3", name: "Mike", isOnline: false },
     { id: "4", name: "Emma", isOnline: true },
-  ])
-  const [newMessage, setNewMessage] = useState("")
-  const [roomName, setRoomName] = useState("")
-  const [roomDescription, setRoomDescription] = useState("")
-  const [showCreateRoom, setShowCreateRoom] = useState(false)
-  const [roomPassword, setRoomPassword] = useState("")
-  const [isPrivateRoom, setIsPrivateRoom] = useState(false)
-  const [searchRoomId, setSearchRoomId] = useState("")
-  const [foundRoom, setFoundRoom] = useState<Room | null>(null)
-  const [joinPassword, setJoinPassword] = useState("")
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
-  const [passwordAttempts, setPasswordAttempts] = useState(0)
-  const [isLocked, setIsLocked] = useState(false)
-  const [lockEndTime, setLockEndTime] = useState<Date | null>(null)
+  ]);
+  const [newMessage, setNewMessage] = useState("");
+  const [roomName, setRoomName] = useState("");
+  const [roomDescription, setRoomDescription] = useState("");
+  const [showCreateRoom, setShowCreateRoom] = useState(false);
+  const [roomPassword, setRoomPassword] = useState("");
+  const [isPrivateRoom, setIsPrivateRoom] = useState(false);
+  const [searchRoomId, setSearchRoomId] = useState("");
+  const [foundRoom, setFoundRoom] = useState<Room | null>(null);
+  const [joinPassword, setJoinPassword] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [passwordAttempts, setPasswordAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockEndTime, setLockEndTime] = useState<Date | null>(null);
 
   const handleCreateRoom = () => {
     if (roomName.trim()) {
-      const roomId = Math.random().toString(36).substr(2, 8).toUpperCase()
+      const roomId = Math.random().toString(36).substr(2, 8).toUpperCase();
       const newRoom: Room = {
         id: roomId,
         name: roomName,
@@ -110,13 +122,13 @@ export function RoomSystem() {
         currentTrack: "No track playing",
         isPrivate: isPrivateRoom,
         password: isPrivateRoom ? roomPassword : undefined,
-      }
-      setRooms([...rooms, newRoom])
-      setRoomName("")
-      setRoomDescription("")
-      setRoomPassword("")
-      setIsPrivateRoom(false)
-      setShowCreateRoom(false)
+      };
+      setRooms([...rooms, newRoom]);
+      setRoomName("");
+      setRoomDescription("");
+      setRoomPassword("");
+      setIsPrivateRoom(false);
+      setShowCreateRoom(false);
 
       setNotification({
         isOpen: true,
@@ -125,96 +137,100 @@ export function RoomSystem() {
         message: isPrivateRoom
           ? `Private room "${newRoom.name}" created! Room ID: ${roomId}`
           : `Public room "${newRoom.name}" created successfully!`,
-      })
+      });
     }
-  }
+  };
 
   const handleSearchRoom = () => {
-    const room = rooms.find((r) => r.id.toLowerCase() === searchRoomId.toLowerCase())
+    const room = rooms.find(
+      (r) => r.id.toLowerCase() === searchRoomId.toLowerCase()
+    );
     if (room) {
-      setFoundRoom(room)
+      setFoundRoom(room);
     } else {
       setNotification({
         isOpen: true,
         type: "error",
         title: "Room Not Found",
         message: "No room found with that ID.",
-      })
+      });
     }
-  }
+  };
 
   const handleJoinRoom = (room: Room) => {
     if (room.isPrivate) {
-      setSelectedRoom(room)
-      setShowPasswordModal(true)
+      setSelectedRoom(room);
+      setShowPasswordModal(true);
     } else {
-      setCurrentRoom(room)
+      setCurrentRoom(room);
       setNotification({
         isOpen: true,
         type: "info",
         title: "Joined Room",
         message: `Welcome to "${room.name}"! Enjoy the music and chat.`,
-      })
+      });
     }
-  }
+  };
 
   const handlePasswordSubmit = () => {
     if (isLocked && lockEndTime && new Date() < lockEndTime) {
-      const remainingTime = Math.ceil((lockEndTime.getTime() - new Date().getTime()) / 60000)
+      const remainingTime = Math.ceil(
+        (lockEndTime.getTime() - new Date().getTime()) / 60000
+      );
       setNotification({
         isOpen: true,
         type: "error",
         title: "Account Locked",
         message: `Too many failed attempts. Try again in ${remainingTime} minutes.`,
-      })
-      return
+      });
+      return;
     }
 
     if (selectedRoom && selectedRoom.password === joinPassword) {
-      setCurrentRoom(selectedRoom)
-      setShowPasswordModal(false)
-      setJoinPassword("")
-      setPasswordAttempts(0)
-      setSelectedRoom(null)
+      setCurrentRoom(selectedRoom);
+      setShowPasswordModal(false);
+      setJoinPassword("");
+      setPasswordAttempts(0);
+      setSelectedRoom(null);
       setNotification({
         isOpen: true,
         type: "success",
         title: "Joined Private Room",
         message: `Welcome to "${selectedRoom.name}"!`,
-      })
+      });
     } else {
-      const newAttempts = passwordAttempts + 1
-      setPasswordAttempts(newAttempts)
+      const newAttempts = passwordAttempts + 1;
+      setPasswordAttempts(newAttempts);
 
       if (newAttempts >= 10) {
-        setIsLocked(true)
-        setLockEndTime(new Date(Date.now() + 60 * 60 * 1000)) // 1 hour
+        setIsLocked(true);
+        setLockEndTime(new Date(Date.now() + 60 * 60 * 1000)); // 1 hour
         setNotification({
           isOpen: true,
           type: "error",
           title: "Account Locked",
           message: "Too many failed attempts. Account locked for 1 hour.",
-        })
+        });
       } else if (newAttempts >= 5) {
-        setIsLocked(true)
-        setLockEndTime(new Date(Date.now() + 60 * 1000)) // 1 minute
+        setIsLocked(true);
+        setLockEndTime(new Date(Date.now() + 60 * 1000)); // 1 minute
         setNotification({
           isOpen: true,
           type: "error",
           title: "Account Locked",
           message: "Too many failed attempts. Account locked for 1 minute.",
-        })
+        });
       } else {
         setNotification({
           isOpen: true,
           type: "error",
           title: "Wrong Password",
           message: `Incorrect password. ${5 - newAttempts} attempts remaining.`,
-        })
+        });
       }
-      setJoinPassword("")
+      setJoinPassword("");
     }
-  }
+  };
 
   const handleSendMessage = () => {
     if (currentRoom && newMessage.trim()) {
@@ -224,39 +240,44 @@ export function RoomSystem() {
         content: newMessage,
         timestamp: new Date(),
         type: "message",
-      }
-      setMessages([...messages, message])
-      setNewMessage("")
+      };
+      setMessages([...messages, message]);
+      setNewMessage("");
     }
-  }
+  };
 
   const [memeModal, setMemeModal] = useState({
     isOpen: false,
     fromUser: "",
     toUser: "",
-  })
-  const [notification, setNotification] = useState({
+  });
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    type: "success" | "error" | "info";
+    title: string;
+    message: string;
+  }>({
     isOpen: false,
-    type: "info" as const,
+    type: "info",
     title: "",
     message: "",
-  })
-  const [autoMemeEnabled, setAutoMemeEnabled] = useState(false)
+  });
+  const [autoMemeEnabled, setAutoMemeEnabled] = useState(false);
 
   const handleSendMeme = () => {
     if (currentRoom) {
-      const memes = ["😂", "🎵", "☕", "🌙", "✨", "🎧", "💻", "🔥"]
-      const randomMeme = memes[Math.floor(Math.random() * memes.length)]
+      const memes = ["😂", "🎵", "☕", "🌙", "✨", "🎧", "💻", "🔥"];
+      const randomMeme = memes[Math.floor(Math.random() * memes.length)];
       const message: Message = {
         id: Date.now().toString(),
         user: "You",
         content: randomMeme,
         timestamp: new Date(),
         type: "meme",
-      }
-      setMessages([...messages, message])
+      };
+      setMessages([...messages, message]);
     }
-  }
+  };
 
   const handleAutoMeme = () => {
     if (currentRoom) {
@@ -267,25 +288,26 @@ export function RoomSystem() {
         "🌙 *lofi mood activated* 🌙",
         "✨ *productivity magic* ✨",
         "🔥 *this beat hits different* 🔥",
-      ]
-      const randomMeme = autoMemes[Math.floor(Math.random() * autoMemes.length)]
+      ];
+      const randomMeme =
+        autoMemes[Math.floor(Math.random() * autoMemes.length)];
       const message: Message = {
         id: Date.now().toString(),
         user: "LofiBot",
         content: randomMeme,
         timestamp: new Date(),
         type: "auto-meme",
-      }
-      setMessages([...messages, message])
+      };
+      setMessages([...messages, message]);
     }
-  }
+  };
 
   const handleSendMemeToUser = (targetUser: string) => {
     setMemeModal({
       isOpen: true,
       fromUser: "You",
       toUser: targetUser,
-    })
+    });
 
     // Also add to chat
     const message: Message = {
@@ -294,15 +316,15 @@ export function RoomSystem() {
       content: `🎁 Sent a meme to ${targetUser}!`,
       timestamp: new Date(),
       type: "meme",
-    }
-    setMessages([...messages, message])
-  }
+    };
+    setMessages([...messages, message]);
+  };
 
   const handleUserClick = (userName: string) => {
     if (userName !== "You") {
-      handleSendMemeToUser(userName)
+      handleSendMemeToUser(userName);
     }
-  }
+  };
 
   if (currentRoom) {
     return (
@@ -310,8 +332,12 @@ export function RoomSystem() {
         {/* Room Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-card-foreground">{currentRoom.name}</h3>
-            <p className="text-sm text-muted-foreground">{currentRoom.description}</p>
+            <h3 className="font-semibold text-card-foreground">
+              {currentRoom.name}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {currentRoom.description}
+            </p>
           </div>
           <Button variant="outline" onClick={() => setCurrentRoom(null)}>
             Leave Room
@@ -322,7 +348,9 @@ export function RoomSystem() {
         <Card className="p-3 bg-primary/10">
           <div className="flex items-center gap-2">
             <Music className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Now Playing: {currentRoom.currentTrack}</span>
+            <span className="text-sm font-medium">
+              Now Playing: {currentRoom.currentTrack}
+            </span>
           </div>
         </Card>
 
@@ -345,7 +373,12 @@ export function RoomSystem() {
                 <Zap className="h-3 w-3" />
                 Auto Meme
               </Button>
-              <Button onClick={handleAutoMeme} size="sm" variant="outline" className="gap-1 bg-transparent">
+              <Button
+                onClick={handleAutoMeme}
+                size="sm"
+                variant="outline"
+                className="gap-1 bg-transparent"
+              >
                 <Gift className="h-3 w-3" />
                 Send Meme
               </Button>
@@ -361,13 +394,17 @@ export function RoomSystem() {
                       message.user !== "You" ? "hover:text-secondary" : ""
                     }`}
                     onClick={() => handleUserClick(message.user)}
-                    title={message.user !== "You" ? "Click to send a meme!" : ""}
+                    title={
+                      message.user !== "You" ? "Click to send a meme!" : ""
+                    }
                   >
                     {message.user}:
                   </span>
                   <span
                     className={`text-sm ${
-                      message.type === "meme" || message.type === "auto-meme" ? "text-2xl" : ""
+                      message.type === "meme" || message.type === "auto-meme"
+                        ? "text-2xl"
+                        : ""
                     } ${message.type === "auto-meme" ? "text-secondary" : ""}`}
                   >
                     {message.content}
@@ -432,7 +469,7 @@ export function RoomSystem() {
           message={notification.message}
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -487,10 +524,16 @@ export function RoomSystem() {
                 <div
                   className={`
                   w-5 h-5 rounded-full border-2 flex items-center justify-center
-                  ${!isPrivateRoom ? "border-primary bg-primary" : "border-muted-foreground"}
+                  ${
+                    !isPrivateRoom
+                      ? "border-primary bg-primary"
+                      : "border-muted-foreground"
+                  }
                 `}
                 >
-                  {!isPrivateRoom && <div className="w-2 h-2 rounded-full bg-background" />}
+                  {!isPrivateRoom && (
+                    <div className="w-2 h-2 rounded-full bg-background" />
+                  )}
                 </div>
                 <Eye className="h-5 w-5" />
                 <span className="font-medium">Public Room</span>
@@ -516,10 +559,16 @@ export function RoomSystem() {
                 <div
                   className={`
                   w-5 h-5 rounded-full border-2 flex items-center justify-center
-                  ${isPrivateRoom ? "border-amber-500 bg-amber-500" : "border-muted-foreground"}
+                  ${
+                    isPrivateRoom
+                      ? "border-amber-500 bg-amber-500"
+                      : "border-muted-foreground"
+                  }
                 `}
                 >
-                  {isPrivateRoom && <div className="w-2 h-2 rounded-full bg-background" />}
+                  {isPrivateRoom && (
+                    <div className="w-2 h-2 rounded-full bg-background" />
+                  )}
                 </div>
                 <Lock className="h-5 w-5" />
                 <span className="font-medium">Private Room</span>
@@ -537,7 +586,8 @@ export function RoomSystem() {
                 />
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                   <Lock className="h-3 w-3" />
-                  This password will be required for users to join your private room
+                  This password will be required for users to join your private
+                  room
                 </p>
               </div>
             )}
@@ -548,7 +598,11 @@ export function RoomSystem() {
               >
                 Create Room
               </Button>
-              <Button variant="outline" onClick={() => setShowCreateRoom(false)} className="border-primary/30">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateRoom(false)}
+                className="border-primary/30"
+              >
                 Cancel
               </Button>
             </div>
@@ -561,7 +615,9 @@ export function RoomSystem() {
           <div className="p-2 bg-primary/20 rounded-lg">
             <Search className="h-5 w-5 text-primary" />
           </div>
-          <h4 className="font-semibold text-lg text-primary">Find Room by ID</h4>
+          <h4 className="font-semibold text-lg text-primary">
+            Find Room by ID
+          </h4>
         </div>
         <div className="flex gap-3">
           <div className="relative flex-1">
@@ -589,14 +645,19 @@ export function RoomSystem() {
           <div className="mt-6 p-5 bg-background/80 border border-primary/30 rounded-xl backdrop-blur-sm shadow-md">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h5 className="font-semibold text-foreground text-lg">{foundRoom.name}</h5>
+                <h5 className="font-semibold text-foreground text-lg">
+                  {foundRoom.name}
+                </h5>
                 {foundRoom.isPrivate && (
                   <div className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-600 dark:text-amber-400 rounded-full text-sm font-medium border border-amber-500/30">
                     <Lock className="h-3 w-3" />
                     Private
                   </div>
                 )}
-                <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border border-primary/30">
+                <Badge
+                  variant="secondary"
+                  className="gap-1 bg-primary/20 text-primary border border-primary/30"
+                >
                   <Users className="h-3 w-3" />
                   {foundRoom.userCount}
                 </Badge>
@@ -608,7 +669,9 @@ export function RoomSystem() {
                 Join Room
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground mt-3 pl-1">{foundRoom.description}</p>
+            <p className="text-sm text-muted-foreground mt-3 pl-1">
+              {foundRoom.description}
+            </p>
           </div>
         )}
       </Card>
@@ -628,12 +691,17 @@ export function RoomSystem() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h4 className="font-semibold text-lg">{room.name}</h4>
-                      <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary">
+                      <Badge
+                        variant="secondary"
+                        className="gap-1 bg-primary/20 text-primary"
+                      >
                         <Users className="h-3 w-3" />
                         {room.userCount}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-3">{room.description}</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {room.description}
+                    </p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Music className="h-3 w-3" />
                       <span>{room.currentTrack}</span>
@@ -660,7 +728,8 @@ export function RoomSystem() {
               <h3 className="font-semibold">Enter Password</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              This is a private room. Please enter the password to join "{selectedRoom.name}".
+              This is a private room. Please enter the password to join "
+              {selectedRoom.name}".
             </p>
             <div className="space-y-3">
               <Input
@@ -669,29 +738,31 @@ export function RoomSystem() {
                 value={joinPassword}
                 onChange={(e) => setJoinPassword(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handlePasswordSubmit()}
-                disabled={isLocked && lockEndTime && new Date() < lockEndTime}
+                disabled={!!(isLocked && lockEndTime && new Date() < lockEndTime)}
               />
               <div className="flex gap-2">
                 <Button
                   onClick={handlePasswordSubmit}
                   className="flex-1"
-                  disabled={isLocked && lockEndTime && new Date() < lockEndTime}
+                  disabled={!!(isLocked && lockEndTime && new Date() < lockEndTime)}
                 >
                   Join Room
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setShowPasswordModal(false)
-                    setJoinPassword("")
-                    setSelectedRoom(null)
+                    setShowPasswordModal(false);
+                    setJoinPassword("");
+                    setSelectedRoom(null);
                   }}
                 >
                   Cancel
                 </Button>
               </div>
               {passwordAttempts > 0 && (
-                <p className="text-sm text-destructive">Failed attempts: {passwordAttempts}/10</p>
+                <p className="text-sm text-destructive">
+                  Failed attempts: {passwordAttempts}/10
+                </p>
               )}
             </div>
           </Card>
@@ -706,5 +777,5 @@ export function RoomSystem() {
         message={notification.message}
       />
     </div>
-  )
+  );
 }

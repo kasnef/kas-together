@@ -1,27 +1,37 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { VideoBackground } from "@/components/video-background"
-import { MusicPlayer } from "@/components/music-player"
-import { UnifiedMenu } from "@/components/unified-menu"
-import { RoomSystem } from "@/components/room-system"
-import { TaskManager } from "@/components/task-manager"
-import { Play, Users, CheckSquare, Coffee, Github, Send, Linkedin } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { VideoBackground } from "@/components/video-background";
+import { MusicPlayer } from "@/components/music-player";
+import { UnifiedMenu } from "@/components/unified-menu";
+import { RoomSystem } from "@/components/room-system";
+import { TaskManager } from "@/components/task-manager";
+import {
+  Play,
+  Users,
+  CheckSquare,
+  Coffee,
+  Github,
+  Send,
+  Linkedin,
+} from "lucide-react";
 
 interface Track {
-  id: string
-  title: string
-  artist: string
-  url: string
-  duration: number
+  id: string;
+  title: string;
+  artist: string;
+  url: string;
+  duration: number;
 }
 
 export default function HomePage() {
-  const [activeSection, setActiveSection] = useState<"music" | "rooms" | "tasks">("music")
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
+  const [activeSection, setActiveSection] = useState<
+    "music" | "rooms" | "tasks"
+  >("music");
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -68,17 +78,32 @@ export default function HomePage() {
                 <ThemeToggle />
 
                 <Button variant="ghost" size="icon" asChild>
-                  <a href="https://github.com" target="_blank" rel="noopener noreferrer" title="GitHub">
+                  <a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="GitHub"
+                  >
                     <Github className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button variant="ghost" size="icon" asChild>
-                  <a href="https://t.me" target="_blank" rel="noopener noreferrer" title="Telegram">
+                  <a
+                    href="https://t.me"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Telegram"
+                  >
                     <Send className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button variant="ghost" size="icon" asChild>
-                  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn">
+                  <a
+                    href="https://linkedin.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="LinkedIn"
+                  >
                     <Linkedin className="h-4 w-4" />
                   </a>
                 </Button>
@@ -98,23 +123,30 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto">
             {activeSection === "music" && (
               <Card className="glass-effect p-6 lofi-glow">
-                <h2 className="text-xl font-pixel mb-6 text-card-foreground">Music Player</h2>
+                <h2 className="text-xl font-pixel mb-6 text-card-foreground">
+                  Music Player
+                </h2>
                 <div className="text-sm text-muted-foreground font-pixel mb-4">
-                  Auto-playing server tracks. Add YouTube URLs for video backgrounds.
+                  Auto-playing server tracks. Add YouTube URLs for video
+                  backgrounds.
                 </div>
               </Card>
             )}
 
             {activeSection === "rooms" && (
               <Card className="glass-effect p-6 lofi-glow">
-                <h2 className="text-xl font-pixel mb-6 text-card-foreground">Chat Rooms</h2>
+                <h2 className="text-xl font-pixel mb-6 text-card-foreground">
+                  Chat Rooms
+                </h2>
                 <RoomSystem />
               </Card>
             )}
 
             {activeSection === "tasks" && (
               <Card className="glass-effect p-6 lofi-glow">
-                <h2 className="text-xl font-pixel mb-6 text-card-foreground">Task Manager</h2>
+                <h2 className="text-xl font-pixel mb-6 text-card-foreground">
+                  Task Manager
+                </h2>
                 <TaskManager />
               </Card>
             )}
@@ -124,5 +156,5 @@ export default function HomePage() {
 
       <MusicPlayer onTrackChange={setCurrentTrack} />
     </div>
-  )
+  );
 }

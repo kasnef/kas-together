@@ -46,7 +46,7 @@ export function VideoBackground({ currentTrack }: VideoBackgroundProps) {
       return (
         <div className="fixed inset-0 z-0">
           <iframe
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1`}
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1`}
             className="w-full h-full object-cover"
             allow="autoplay; encrypted-media"
             allowFullScreen
