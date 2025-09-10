@@ -50,14 +50,6 @@ export function UnifiedMenu({ currentTrack }: UnifiedMenuProps) {
           <div className="flex flex-col h-full max-h-[80vh]">
             <div className="flex items-center justify-between p-6 border-b border-orange-200/50 dark:border-orange-800/50">
               <h2 className="text-lg font-medium text-orange-900 dark:text-orange-100">Control Panel</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOpen(false)}
-                className="text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900"
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
