@@ -142,8 +142,8 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
     }
   };
 
-  const handleAddTrack = () => {
-    if (urlInput.trim()) {
+  const handleAddTrack = (url: string) => {
+    if (url.trim()) {
       if (!hasUserTracks) {
         setPlaylist([]);
         setHasUserTracks(true);
@@ -153,7 +153,7 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
         id: Date.now().toString(),
         title: `Track ${playlist.length + 1}`,
         artist: "User",
-        url: urlInput,
+        url,
       };
 
       const newPlaylist = hasUserTracks ? [...playlist, newTrack] : [newTrack];
@@ -171,8 +171,6 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
             .catch((e) => console.error("Autoplay fail", e));
         }
       }, 200);
-
-      setUrlInput("");
     }
   };
 
