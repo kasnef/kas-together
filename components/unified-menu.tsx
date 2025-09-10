@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Menu, X, Music, Volume2 } from "lucide-react"
 import { PomodoroTimer } from "./pomodoro-timer"
+import { DialogTitle } from "@radix-ui/react-dialog"
 
 interface Track {
   id: string
@@ -48,8 +49,8 @@ export function UnifiedMenu({ currentTrack }: UnifiedMenuProps) {
         </DialogTrigger>
         <DialogContent className="max-w-lg max-h-[80vh] bg-gradient-to-br from-orange-50/95 to-amber-50/95 dark:from-orange-950/95 dark:to-amber-950/95 backdrop-blur-md border-orange-200/50 dark:border-orange-800/50 p-0 shadow-2xl overflow-hidden">
           <div className="flex flex-col h-full max-h-[80vh]">
-            <div className="flex items-center justify-between p-6 border-b border-orange-200/50 dark:border-orange-800/50">
-              <h2 className="text-lg font-medium text-orange-900 dark:text-orange-100">Control Panel</h2>
+            <div  className="flex items-center justify-between p-6 border-b border-orange-200/50 dark:border-orange-800/50">
+              <DialogTitle className="text-lg font-medium text-orange-900 dark:text-orange-100">Control Panel</DialogTitle>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4">

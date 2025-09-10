@@ -17,6 +17,7 @@ import {
   Github,
   Send,
   Linkedin,
+  HandCoins,
 } from "lucide-react";
 
 interface Track {
@@ -79,7 +80,7 @@ export default function HomePage() {
 
                 <Button variant="ghost" size="icon" asChild>
                   <a
-                    href="https://github.com"
+                    href="https://github.com/kasnef"
                     target="_blank"
                     rel="noopener noreferrer"
                     title="GitHub"
@@ -89,7 +90,7 @@ export default function HomePage() {
                 </Button>
                 <Button variant="ghost" size="icon" asChild>
                   <a
-                    href="https://t.me"
+                    href="https://t.me/kasnef"
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Telegram"
@@ -99,7 +100,7 @@ export default function HomePage() {
                 </Button>
                 <Button variant="ghost" size="icon" asChild>
                   <a
-                    href="https://linkedin.com"
+                    href="https://www.linkedin.com/in/kasnef/"
                     target="_blank"
                     rel="noopener noreferrer"
                     title="LinkedIn"
@@ -107,13 +108,16 @@ export default function HomePage() {
                     <Linkedin className="h-4 w-4" />
                   </a>
                 </Button>
-                <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-primary overflow-hidden ml-2">
-                  <img
-                    src="/pixel-art-avatar-developer-with-headphones.jpg"
-                    alt="Author"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                <Button variant="ghost" size="icon" asChild>
+                  <a
+                    href="https://www.calangthang.net/en/support-me"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="LinkedIn"
+                  >
+                    <HandCoins className="h-4 w-4" />
+                  </a>
+                </Button>
               </div>
             </nav>
           </div>
@@ -135,9 +139,6 @@ export default function HomePage() {
 
             {activeSection === "rooms" && (
               <Card className="glass-effect p-6 lofi-glow">
-                <h2 className="text-xl font-pixel mb-6 text-card-foreground">
-                  Chat Rooms
-                </h2>
                 <RoomSystem />
               </Card>
             )}

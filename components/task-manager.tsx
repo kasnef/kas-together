@@ -37,9 +37,14 @@ export function TaskManager() {
   const [sessionTime, setSessionTime] = useState(0)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
 
-  const [notification, setNotification] = useState({
+  const [notification, setNotification] = useState<{
+    isOpen: boolean
+    type: "info" | "warning" | "error" | "success"
+    title: string
+    message: string
+  }>({
     isOpen: false,
-    type: "info" as const,
+    type: "info",
     title: "",
     message: "",
   })
