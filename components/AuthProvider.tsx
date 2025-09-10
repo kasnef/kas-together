@@ -1,25 +1,30 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { UsernameModal } from "./username-modal";
+import { generateUser } from "@/services/api/createUser.api";
 
 type User = { id: string; username: string } | null;
 
+interface AuthContextType {
+  setUser: (user: User | null) => void;
+  logout: () => void;
+}
+
 const AuthContext = createContext<{
-  user: User;
-  setUser: (u: User) => void;
   logout: () => void;
 }>({
-  user: null,
-  setUser: () => {},
   logout: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
-    //TODO gọi hook api check me chỗ này
+    if (token) {}
+    setChecked(true);
   }, []);
 
   function logout() {
@@ -27,7 +32,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
-  return <AuthContext.Provider value={{ user, setUser, logout }}>{children}</AuthContext.Provider>;
+  if (!checked) return null;
+
+  return (
+    <AuthContext.Provider value={{ logout }}>
+      {children}
+      {!localStorage.getItem("auth_token") && (
+        <UsernameModal
+          onSubmit={ async (username) => {
+            const genUser = await generateUser(username);
+            if (!genUser) {
+              console.log("Error when creating user!");
+            }
+            localStorage.setItem("auth_token", genUser?.token);
+          }}
+          forceOpen
+        />
+      )}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
