@@ -1,15 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { getRandomPlaylist, type Song } from "@/data/music-playlist";
 import {
   ChevronUp,
-  ListPlus,
   Music,
   Pause,
   Play,
-  Plus,
   Repeat,
   Shuffle,
   SkipBack,
@@ -20,16 +18,11 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { PlaylistModal } from "./playlist-modal";
-import { getRandomPlaylist, type Song } from "@/data/music-playlist";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@radix-ui/react-dialog";
-import { DialogHeader } from "./ui/dialog";
+import { useGenericStore } from "@/store/useStore";
 import { AddSongModal } from "./add-song-modal";
+import { PlaylistModal } from "./playlist-modal";
+import endpoint from "@/services/endpoint";
+import { getYtInfo } from "@/services/api/getYtInfo.api";
 
 interface Track {
   id: string;
@@ -44,13 +37,13 @@ interface MusicPlayerProps {
 
 export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
   const [initialPlaylist] = useState(() => getRandomPlaylist());
+  const setSimpleItem = useGenericStore((state) => state.setSimpleItem);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [volume, setVolume] = useState([75]);
   const [isMuted, setIsMuted] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
-  const [playlist, setPlaylist] = useState<Track[]>(initialPlaylist);
+  const [playlist, setPlaylist] = useState<Track[]>(initialPlaylist.playlist);
   const [isShuffled, setIsShuffled] = useState(false);
   const [isRepeating, setIsRepeating] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -59,16 +52,12 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  console.log(`isPlaying ==> `, isPlaying);
-
   // play music when clicked anywhere
   useEffect(() => {
     const enableAudio = () => {
       if (audioRef.current && currentTrack) {
         audioRef.current.muted = false;
-        audioRef.current.play().catch((err) => {
-          console.log("Autoplay blocked:", err);
-        });
+        audioRef.current.play().catch((err) => {});
       }
       document.removeEventListener("click", enableAudio);
     };
@@ -81,12 +70,12 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
   }, [currentTrack]);
 
   useEffect(() => {
-    if (initialPlaylist.length > 0 && !hasUserTracks) {
-      setCurrentTrack(initialPlaylist[0]);
+    if (initialPlaylist.playlist.length > 0 && !hasUserTracks) {
+      setCurrentTrack(initialPlaylist.playlist[0]);
       setCurrentIndex(0);
-      console.log("Init track:", initialPlaylist[0]);
+      setSimpleItem({ name: initialPlaylist.videoPlaylistKey });
     }
-  }, [initialPlaylist]);
+  }, [initialPlaylist.playlist]);
 
   useEffect(() => {
     onTrackChange?.(currentTrack);
@@ -105,20 +94,16 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
     if (!audioRef.current) return;
 
     if (isPlaying) {
-      console.log("Pausing...");
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      console.log("Trying to play...");
       audioRef.current.muted = false;
       audioRef.current
         .play()
         .then(() => {
-          console.log("Play success");
           setIsPlaying(true);
         })
         .catch((err) => {
-          console.error("Play failed", err);
           setIsPlaying(false);
         });
     }
@@ -142,35 +127,40 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
     }
   };
 
-  const handleAddTrack = (url: string) => {
-    if (url.trim()) {
-      if (!hasUserTracks) {
-        setPlaylist([]);
-        setHasUserTracks(true);
-      }
+  const handleAddTrack = async (url: string) => {
+    if (!url.trim()) return;
+
+    try {
+      const info: Track = await getYtInfo(url);
 
       const newTrack: Track = {
-        id: Date.now().toString(),
-        title: `Track ${playlist.length + 1}`,
-        artist: "User",
-        url,
+        id: info?.id,
+        title: info.title,
+        artist: info.artist,
+        url: url,
       };
 
-      const newPlaylist = hasUserTracks ? [...playlist, newTrack] : [newTrack];
-      setPlaylist(newPlaylist);
+      if (hasUserTracks) {
+        setPlaylist((prevPlaylist) => [...prevPlaylist, newTrack]);
+      } else {
+        setPlaylist([newTrack]);
+        setHasUserTracks(true);
+        setCurrentTrack(newTrack);
+        setCurrentIndex(0);
+        setIsPlaying(true);
 
-      setCurrentTrack(newTrack);
-      setCurrentIndex(newPlaylist.length - 1);
-      setIsPlaying(true);
-
-      setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.muted = false;
-          audioRef.current
-            .play()
-            .catch((e) => console.error("Autoplay fail", e));
-        }
-      }, 200);
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.muted = false;
+            audioRef.current
+              .play()
+              .catch((e) => console.error("Autoplay fail on first track", e));
+          }
+        }, 200);
+      }
+    } catch (error) {
+      console.error("Error fetching track info:", error);
+    } finally {
     }
   };
 
@@ -186,8 +176,8 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
       } else {
         if (hasUserTracks) {
           setHasUserTracks(false);
-          setPlaylist(initialPlaylist);
-          setCurrentTrack(initialPlaylist[0]);
+          setPlaylist(initialPlaylist.playlist);
+          setCurrentTrack(initialPlaylist.playlist[0]);
           setCurrentIndex(0);
         } else {
           setCurrentTrack(null);
@@ -199,8 +189,8 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
   };
 
   const handleClearPlaylist = () => {
-    setPlaylist(initialPlaylist);
-    setCurrentTrack(initialPlaylist[0]);
+    setPlaylist(initialPlaylist.playlist);
+    setCurrentTrack(initialPlaylist.playlist[0]);
     setCurrentIndex(0);
     setHasUserTracks(false);
     setIsPlaying(false);
@@ -258,6 +248,8 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
       setCurrentIndex(0);
       setHasUserTracks(true);
 
+      console.log("newPlaylist ==> ", newPlaylist);
+
       setTimeout(() => {
         setIsPlaying(true);
         if (audioRef.current) {
@@ -274,8 +266,9 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
       {/* Audio Element */}
       {currentTrack && (
         <audio
+          autoPlay
           ref={audioRef}
-          src={currentTrack?.url}
+          src={`${process.env.NEXT_PUBLIC_API_URL}${endpoint.stream_music}?url=${currentTrack?.url}`}
           onEnded={handleTrackEnd}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -283,7 +276,6 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
             if (audioRef.current) {
               audioRef.current.volume = volume[0] / 100;
             }
-            console.log("Loaded metadata for:", currentTrack?.url);
           }}
         />
       )}
