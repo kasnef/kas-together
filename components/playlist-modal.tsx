@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,17 +8,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  ListPlus,
-  Music,
-  Moon,
-  Heart,
-  Coffee,
-  Brain,
-  Droplet,
-} from "lucide-react";
-import { useState } from "react";
 import {
   RelaxPlaylist,
   SadnessPlaylist,
@@ -27,30 +17,55 @@ import {
   WorkingPlaylist,
   type Song,
 } from "@/data/music-playlist";
+import { useGenericStore } from "@/store/useStore";
+import {
+  Brain,
+  Coffee,
+  Droplet,
+  Heart,
+  ListPlus,
+  Moon,
+  Music,
+} from "lucide-react";
+import { useState } from "react";
 
 const PLAYLIST_THEMES = [
   {
     name: "Short Love",
     icon: <Heart className="h-5 w-5" />,
     data: ShortLovePlaylist,
+    videoPlayList: "Romactic",
   },
   {
     name: "Short Relax",
     icon: <Music className="h-5 w-5" />,
     data: ShortRelaxPlaylist,
+    videoPlayList: "Relax",
   },
-  { name: "Relax", icon: <Coffee className="h-5 w-5" />, data: RelaxPlaylist },
+  {
+    name: "Relax",
+    icon: <Coffee className="h-5 w-5" />,
+    data: RelaxPlaylist,
+    videoPlayList: "Relax",
+  },
   {
     name: "Sadness",
     icon: <Droplet className="h-5 w-5" />,
     data: SadnessPlaylist,
+    videoPlayList: "Sadness",
   },
   {
     name: "Working | Study",
     icon: <Brain className="h-5 w-5" />,
     data: WorkingPlaylist,
+    videoPlayList: "Work",
   },
-  { name: "Sleep", icon: <Moon className="h-5 w-5" />, data: SleepPlaylist },
+  {
+    name: "Sleep",
+    icon: <Moon className="h-5 w-5" />,
+    data: SleepPlaylist,
+    videoPlayList: "Sleep",
+  },
 ];
 
 interface PlaylistModalProps {
@@ -58,11 +73,17 @@ interface PlaylistModalProps {
 }
 
 export function PlaylistModal({ onPlaylistSelect }: PlaylistModalProps) {
+  const setSimpleItem = useGenericStore((state) => state.setSimpleItem);
+
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (playlist: Song[]) => {
     onPlaylistSelect(playlist);
     setIsOpen(false);
+  };
+
+  const handeSelectVideoPlaylist = (playlist: string) => {
+    setSimpleItem({ name: playlist });
   };
 
   return (
@@ -86,7 +107,10 @@ export function PlaylistModal({ onPlaylistSelect }: PlaylistModalProps) {
           {PLAYLIST_THEMES.map((theme) => (
             <button
               key={theme.name}
-              onClick={() => handleSelect(theme.data)}
+              onClick={() => {
+                handleSelect(theme.data);
+                handeSelectVideoPlaylist(theme.videoPlayList);
+              }}
               className="group flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-gradient-to-br from-white/50 to-orange-50/50 dark:from-black/20 dark:to-orange-950/50 backdrop-blur-sm border border-orange-200/50 dark:border-orange-800/50 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105 hover:border-orange-400/50 dark:hover:border-orange-600/50"
             >
               <div className="text-orange-600 dark:text-orange-400 transition-colors group-hover:text-orange-500 dark:group-hover:text-orange-300">

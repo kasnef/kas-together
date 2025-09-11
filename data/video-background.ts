@@ -184,3 +184,7 @@ export const getRandomBackground = (playlistName: string): Video | null => {
   const randomIndex = Math.floor(Math.random() * playlist.data.length);
   return playlist.data[randomIndex];
 };
+export const getRandomPlaylistBackground = (): string => {
+  const randomIndex = Math.floor(Math.random() * PlaylistBackground.length);
+  return PlaylistBackground[randomIndex].url;
+};

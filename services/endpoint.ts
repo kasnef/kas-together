@@ -12,4 +12,5 @@ export default {
 
   // music
   stream_music: "/api/music/stream",
+  get_yt_info: "/api/music/get-info",
 }
