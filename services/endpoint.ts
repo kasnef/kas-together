@@ -9,4 +9,7 @@ export default {
   delete_room: "/api/room/delete",
   join_room: "/api/room/join-room",
   kick_member: "/api/room/kick-member",
+
+  // music
+  stream_music: "/api/music/stream",
 }

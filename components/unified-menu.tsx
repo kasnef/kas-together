@@ -21,19 +21,70 @@ interface UnifiedMenuProps {
   currentTrack: Track | null;
 }
 
+interface SoundState {
+  isPlaying: boolean;
+  volume: number;
+}
+
+interface AmbientSoundStates {
+  [key: string]: SoundState;
+}
+
+const ambientSoundsConfig = [
+  { icon: "🌧️", label: "Rain", soundType: "rain" },
+  { icon: "☕", label: "Coffee Shop", soundType: "coffee" },
+  { icon: "⌨️", label: "Keyboard", soundType: "keyboard" },
+  { icon: "⛈️", label: "Thunder", soundType: "thunder" },
+  { icon: "🌿", label: "Nature", soundType: "nature" },
+  { icon: "🌊", label: "Water", soundType: "water" },
+];
+
 export function UnifiedMenu({ currentTrack }: UnifiedMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const ambientRef = useRef<AmbientSoundsRef>(null);
+
+  const [ambientSoundStates, setAmbientSoundStates] =
+    useState<AmbientSoundStates>(
+      ambientSoundsConfig.reduce((acc, sound) => {
+        acc[sound.soundType] = { isPlaying: false, volume: 50 };
+        return acc;
+      }, {} as AmbientSoundStates)
+    );
 
   const handleNotification = (message: string) => {
     setNotification(message);
     setTimeout(() => setNotification(null), 5000);
   };
 
+  const handleToggleSound = (soundType: string) => {
+    if (ambientRef.current) {
+      ambientRef.current.toggleSound(soundType);
+      setAmbientSoundStates((prevStates) => ({
+        ...prevStates,
+        [soundType]: {
+          ...prevStates[soundType],
+          isPlaying: !prevStates[soundType].isPlaying,
+        },
+      }));
+    }
+  };
+
+  const handleVolumeChange = (soundType: string, newVolume: number) => {
+    if (ambientRef.current) {
+      ambientRef.current.updateVolume(soundType, newVolume);
+      setAmbientSoundStates((prevStates) => ({
+        ...prevStates,
+        [soundType]: {
+          ...prevStates[soundType],
+          volume: newVolume,
+        },
+      }));
+    }
+  };
+
   return (
     <>
-    
       <AmbientSounds ref={ambientRef} />
       {notification && (
         <div className="fixed top-20 right-4 bg-gradient-to-r from-primary to-orange-500 text-white p-3 rounded-lg shadow-lg z-50 max-w-sm">
@@ -98,42 +149,19 @@ export function UnifiedMenu({ currentTrack }: UnifiedMenuProps) {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  <AmbientSoundControl
-                    icon="🌧️"
-                    label="Rain"
-                    soundType="rain"
-                    ambientRef={ambientRef}
-                  />
-                  <AmbientSoundControl
-                    icon="☕"
-                    label="Coffee Shop"
-                    soundType="coffee"
-                    ambientRef={ambientRef}
-                  />
-                  <AmbientSoundControl
-                    icon="⌨️"
-                    label="Keyboard"
-                    soundType="keyboard"
-                    ambientRef={ambientRef}
-                  />
-                  <AmbientSoundControl
-                    icon="⛈️"
-                    label="Thunder"
-                    soundType="thunder"
-                    ambientRef={ambientRef}
-                  />
-                  <AmbientSoundControl
-                    icon="🌿"
-                    label="Nature"
-                    soundType="nature"
-                    ambientRef={ambientRef}
-                  />
-                  <AmbientSoundControl
-                    icon="🌊"
-                    label="Water"
-                    soundType="water"
-                    ambientRef={ambientRef}
-                  />
+                  {ambientSoundsConfig.map((sound) => (
+                    <AmbientSoundControl
+                      key={sound.soundType}
+                      icon={sound.icon}
+                      label={sound.label}
+                      isPlaying={ambientSoundStates[sound.soundType].isPlaying}
+                      volume={ambientSoundStates[sound.soundType].volume}
+                      onToggle={() => handleToggleSound(sound.soundType)}
+                      onVolumeChange={(newVolume) =>
+                        handleVolumeChange(sound.soundType, newVolume)
+                      }
+                    />
+                  ))}
                 </div>
               </Card>
             </div>
@@ -145,36 +173,33 @@ export function UnifiedMenu({ currentTrack }: UnifiedMenuProps) {
 }
 
 interface AmbientSoundControlProps {
-  icon: string
-  label: string
-  soundType: string
-  ambientRef: React.RefObject<AmbientSoundsRef | null>
+  icon: string;
+  label: string;
+  isPlaying: boolean;
+  volume: number;
+  onToggle: () => void;
+  onVolumeChange: (volume: number) => void;
 }
 
-function AmbientSoundControl({ icon, label, soundType, ambientRef }: AmbientSoundControlProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [volume, setVolume] = useState(50)
-
-  const toggleSound = () => {
-    if (ambientRef.current) {
-      ambientRef.current.toggleSound(soundType)
-    }
-    setIsPlaying(!isPlaying)
-  }
-
+function AmbientSoundControl({
+  icon,
+  label,
+  isPlaying,
+  volume,
+  onToggle,
+  onVolumeChange,
+}: AmbientSoundControlProps) {
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = Number(e.target.value)
-    setVolume(newVolume)
-    if (ambientRef.current) {
-      ambientRef.current.updateVolume(soundType, newVolume)
-    }
-  }
+    onVolumeChange(Number(e.target.value));
+  };
 
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-orange-100/30 dark:bg-orange-900/30 border border-orange-200/30 dark:border-orange-800/30">
       <div className="flex items-center gap-2">
         <span className="text-sm">{icon}</span>
-        <span className="text-xs font-medium text-orange-900 dark:text-orange-100">{label}</span>
+        <span className="text-xs font-medium text-orange-900 dark:text-orange-100">
+          {label}
+        </span>
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -189,7 +214,7 @@ function AmbientSoundControl({ icon, label, soundType, ambientRef }: AmbientSoun
         <Button
           variant={isPlaying ? "default" : "ghost"}
           size="sm"
-          onClick={toggleSound}
+          onClick={onToggle}
           className={`h-6 w-12 text-xs font-medium ${
             isPlaying
               ? "bg-orange-500 hover:bg-orange-600 text-white"
@@ -200,5 +225,5 @@ function AmbientSoundControl({ icon, label, soundType, ambientRef }: AmbientSoun
         </Button>
       </div>
     </div>
-  )
+  );
 }

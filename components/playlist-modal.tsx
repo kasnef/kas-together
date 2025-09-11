@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Dialog,
@@ -6,21 +6,52 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { ListPlus, Music, Moon, Heart, Coffee, Brain, Droplet } from "lucide-react"
-import { useState } from "react"
-import { RelaxPlaylist, SadnessPlaylist, ShortLovePlaylist, ShortRelaxPlaylist, SleepPlaylist, WorkingPlaylist, type Song } from "@/data/music-playlist"
-
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  ListPlus,
+  Music,
+  Moon,
+  Heart,
+  Coffee,
+  Brain,
+  Droplet,
+} from "lucide-react";
+import { useState } from "react";
+import {
+  RelaxPlaylist,
+  SadnessPlaylist,
+  ShortLovePlaylist,
+  ShortRelaxPlaylist,
+  SleepPlaylist,
+  WorkingPlaylist,
+  type Song,
+} from "@/data/music-playlist";
 
 const PLAYLIST_THEMES = [
-  { name: "Short Love", icon: <Heart className="h-5 w-5" />, data: ShortLovePlaylist },
-  { name: "Short Relax", icon: <Music className="h-5 w-5" />, data: ShortRelaxPlaylist },
-  { name: "Relax", icon: <Droplet className="h-5 w-5" />, data: RelaxPlaylist },
-  { name: "Sadness", icon: <Droplet className="h-5 w-5" />, data: SadnessPlaylist },
-  { name: "Working", icon: <Brain className="h-5 w-5" />, data: WorkingPlaylist },
+  {
+    name: "Short Love",
+    icon: <Heart className="h-5 w-5" />,
+    data: ShortLovePlaylist,
+  },
+  {
+    name: "Short Relax",
+    icon: <Music className="h-5 w-5" />,
+    data: ShortRelaxPlaylist,
+  },
+  { name: "Relax", icon: <Coffee className="h-5 w-5" />, data: RelaxPlaylist },
+  {
+    name: "Sadness",
+    icon: <Droplet className="h-5 w-5" />,
+    data: SadnessPlaylist,
+  },
+  {
+    name: "Working | Study",
+    icon: <Brain className="h-5 w-5" />,
+    data: WorkingPlaylist,
+  },
   { name: "Sleep", icon: <Moon className="h-5 w-5" />, data: SleepPlaylist },
-]
+];
 
 interface PlaylistModalProps {
   onPlaylistSelect: (playlist: Song[]) => void;

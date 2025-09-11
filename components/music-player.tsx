@@ -1,15 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { getRandomPlaylist, type Song } from "@/data/music-playlist";
 import {
   ChevronUp,
-  ListPlus,
   Music,
   Pause,
   Play,
-  Plus,
   Repeat,
   Shuffle,
   SkipBack,
@@ -20,16 +18,9 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { PlaylistModal } from "./playlist-modal";
-import { getRandomPlaylist, type Song } from "@/data/music-playlist";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@radix-ui/react-dialog";
-import { DialogHeader } from "./ui/dialog";
 import { AddSongModal } from "./add-song-modal";
+import { PlaylistModal } from "./playlist-modal";
+import endpoint from "@/services/endpoint";
 
 interface Track {
   id: string;
@@ -49,7 +40,6 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [volume, setVolume] = useState([75]);
   const [isMuted, setIsMuted] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
   const [playlist, setPlaylist] = useState<Track[]>(initialPlaylist);
   const [isShuffled, setIsShuffled] = useState(false);
   const [isRepeating, setIsRepeating] = useState(false);
@@ -59,16 +49,12 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  console.log(`isPlaying ==> `, isPlaying);
-
   // play music when clicked anywhere
   useEffect(() => {
     const enableAudio = () => {
       if (audioRef.current && currentTrack) {
         audioRef.current.muted = false;
-        audioRef.current.play().catch((err) => {
-          console.log("Autoplay blocked:", err);
-        });
+        audioRef.current.play().catch((err) => {});
       }
       document.removeEventListener("click", enableAudio);
     };
@@ -105,20 +91,16 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
     if (!audioRef.current) return;
 
     if (isPlaying) {
-      console.log("Pausing...");
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      console.log("Trying to play...");
       audioRef.current.muted = false;
       audioRef.current
         .play()
         .then(() => {
-          console.log("Play success");
           setIsPlaying(true);
         })
         .catch((err) => {
-          console.error("Play failed", err);
           setIsPlaying(false);
         });
     }
@@ -153,7 +135,7 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
         id: Date.now().toString(),
         title: `Track ${playlist.length + 1}`,
         artist: "User",
-        url,
+        url: `${process.env.NEXT_PUBLIC_API_URL}${endpoint.stream_music}?url=${url}`,
       };
 
       const newPlaylist = hasUserTracks ? [...playlist, newTrack] : [newTrack];
@@ -274,8 +256,9 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
       {/* Audio Element */}
       {currentTrack && (
         <audio
+          autoPlay
           ref={audioRef}
-          src={currentTrack?.url}
+          src={`${process.env.NEXT_PUBLIC_API_URL}${endpoint.stream_music}?url=${currentTrack?.url}`}
           onEnded={handleTrackEnd}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -283,7 +266,6 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
             if (audioRef.current) {
               audioRef.current.volume = volume[0] / 100;
             }
-            console.log("Loaded metadata for:", currentTrack?.url);
           }}
         />
       )}
