@@ -99,7 +99,7 @@ export function PlaylistModal({ onPlaylistSelect }: PlaylistModalProps) {
       </DialogTrigger>
       <DialogContent className="max-w-md bg-gradient-to-br from-orange-50/95 to-amber-50/95 dark:from-orange-950/95 dark:to-amber-950/95 backdrop-blur-md border-orange-200/50 dark:border-orange-800/50 p-0 shadow-2xl">
         <DialogHeader className="p-6 border-b border-orange-200/50 dark:border-orange-800/50">
-          <DialogTitle className="text-lg font-medium text-orange-900 dark:text-orange-100">
+          <DialogTitle className="text-2xl font-medium text-orange-900 dark:text-orange-100">
             Choose one playlist
           </DialogTitle>
         </DialogHeader>
@@ -116,7 +116,7 @@ export function PlaylistModal({ onPlaylistSelect }: PlaylistModalProps) {
               <div className="text-orange-600 dark:text-orange-400 transition-colors group-hover:text-orange-500 dark:group-hover:text-orange-300">
                 {theme.icon}
               </div>
-              <p className="text-sm font-medium text-orange-800 dark:text-orange-200 transition-colors group-hover:text-orange-900 dark:group-hover:text-orange-100">
+              <p className="text-lg font-medium text-orange-800 dark:text-orange-200 transition-colors group-hover:text-orange-900 dark:group-hover:text-orange-100">
                 {theme.name}
               </p>
             </button>

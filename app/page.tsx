@@ -45,14 +45,14 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Coffee className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-pixel text-foreground">Lofi Cafe</h1>
+              <h1 className="text-3xl font-pixel text-foreground">Lofi Cafe</h1>
             </div>
 
             <nav className="flex items-center gap-4">
               <Button
                 variant={activeSection === "music" ? "default" : "ghost"}
                 onClick={() => setActiveSection("music")}
-                className="gap-2 font-pixel text-xs"
+                className="gap-2 font-pixel text-lg"
               >
                 <Play className="h-4 w-4" />
                 Music
@@ -60,7 +60,7 @@ export default function HomePage() {
               <Button
                 variant={activeSection === "rooms" ? "default" : "ghost"}
                 onClick={() => setActiveSection("rooms")}
-                className="gap-2 font-pixel text-xs"
+                className="gap-2 font-pixel text-lg"
               >
                 <Users className="h-4 w-4" />
                 Rooms
@@ -68,7 +68,7 @@ export default function HomePage() {
               <Button
                 variant={activeSection === "tasks" ? "default" : "ghost"}
                 onClick={() => setActiveSection("tasks")}
-                className="gap-2 font-pixel text-xs"
+                className="gap-2 font-pixel text-lg"
               >
                 <CheckSquare className="h-4 w-4" />
                 Tasks
@@ -126,10 +126,10 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto">
             {activeSection === "music" && (
               <Card className="glass-effect p-6 lofi-glow">
-                <h2 className="text-xl font-pixel mb-6 text-card-foreground">
+                <h2 className="text-3xl font-pixel text-card-foreground">
                   Music Player
                 </h2>
-                <div className="text-sm text-muted-foreground font-pixel mb-4">
+                <div className="text-lg text-muted-foreground font-pixel mb-4">
                   Auto-playing server tracks. Add YouTube URLs for video
                   backgrounds.
                 </div>

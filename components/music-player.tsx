@@ -268,7 +268,7 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
         <audio
           autoPlay
           ref={audioRef}
-          src={`${process.env.NEXT_PUBLIC_API_URL}${endpoint.stream_music}?url=${currentTrack?.url}`}
+          src={`${process.env.NEXT_PUBLIC_DEV_API_URL}${endpoint.stream_music}?url=${currentTrack?.url}`}
           onEnded={handleTrackEnd}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -280,7 +280,7 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
         />
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-amber-50/95 to-orange-50/95 dark:from-amber-950/95 dark:to-orange-950/95 backdrop-blur-sm border-t border-amber-200/50 dark:border-amber-800/50 p-3 z-50 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-amber-50/95 to-orange-50/95 dark:from-amber-950/95 dark:to-orange-950/95 backdrop-blur-sm border-t border-amber-200/50 dark:border-amber-800/50 p-1 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
           <div
             className="min-w-0 max-w-[220px] cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-900/50 rounded-lg p-2 transition-colors"
@@ -289,14 +289,14 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
             {currentTrack ? (
               <div className="flex items-center gap-2">
                 <Music className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900 px-2 py-1 rounded-full">
+                <span className="text-sm text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900 px-2 py-1 rounded-full">
                   {playlist.length}
                 </span>
                 <div className="truncate flex-1">
-                  <p className="text-sm font-medium truncate text-amber-900 dark:text-amber-100">
+                  <p className="text-lg font-medium truncate text-amber-900 dark:text-amber-100">
                     {currentTrack.title}
                   </p>
-                  <p className="text-xs text-amber-700 dark:text-amber-300 truncate">
+                  <p className="text-sm text-amber-700 dark:text-amber-300 truncate">
                     {currentTrack.artist}
                   </p>
                 </div>
@@ -307,7 +307,7 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
                 />
               </div>
             ) : (
-              <p className="text-sm text-amber-600 dark:text-amber-400">
+              <p className="text-lg text-amber-600 dark:text-amber-400">
                 No track selected
               </p>
             )}
@@ -406,7 +406,7 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
       {showPlaylist && (
         <div className="fixed bottom-16 left-4 right-4 max-w-md mx-auto max-h-80 bg-gradient-to-br from-amber-50/98 to-orange-50/98 dark:from-amber-950/98 dark:to-orange-950/98 backdrop-blur-md border border-amber-200/50 dark:border-amber-800/50 rounded-xl p-4 z-40 overflow-y-auto shadow-2xl">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-medium text-amber-900 dark:text-amber-100">
+            <h4 className="text-lg font-medium text-amber-900 dark:text-amber-100">
               Playlist ({playlist.length})
             </h4>
             <div className="flex gap-2">
@@ -433,7 +433,7 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
             {playlist.map((track, index) => (
               <div
                 key={track.id}
-                className={`flex items-center justify-between p-3 rounded-lg text-xs cursor-pointer transition-all hover:bg-amber-100/70 dark:hover:bg-amber-900/70 ${
+                className={`flex items-center justify-between p-3 rounded-lg text-sm cursor-pointer transition-all hover:bg-amber-100/70 dark:hover:bg-amber-900/70 ${
                   currentTrack?.id === track.id
                     ? "bg-amber-200/70 dark:bg-amber-800/70 ring-1 ring-amber-400/50"
                     : "bg-white/30 dark:bg-black/20"
@@ -448,10 +448,10 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
                     <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate text-amber-900 dark:text-amber-100">
+                    <p className="text-lg font-medium truncate text-amber-900 dark:text-amber-100">
                       {track.title}
                     </p>
-                    <p className="text-amber-700 dark:text-amber-300 truncate">
+                    <p className="text-[16px] text-amber-700 dark:text-amber-300 truncate">
                       {track.artist}
                     </p>
                   </div>
@@ -472,8 +472,8 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
             {playlist.length === 0 && (
               <div className="text-center py-8 text-amber-600 dark:text-amber-400">
                 <Music className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No tracks in playlist</p>
-                <p className="text-xs opacity-75">
+                <p className="text-lg">No tracks in playlist</p>
+                <p className="text-sm opacity-75">
                   Add some music to get started
                 </p>
               </div>

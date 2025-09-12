@@ -101,10 +101,10 @@ export function UnifiedMenu({ currentTrack }: UnifiedMenuProps) {
             <Menu className="h-4 w-4" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-lg max-h-[80vh] bg-gradient-to-br from-orange-50/95 to-amber-50/95 dark:from-orange-950/95 dark:to-amber-950/95 backdrop-blur-md border-orange-200/50 dark:border-orange-800/50 p-0 shadow-2xl overflow-hidden">
+        <DialogContent showCloseButton={false} className="max-w-lg max-h-[80vh] bg-gradient-to-br from-orange-50/95 to-amber-50/95 dark:from-orange-950/95 dark:to-amber-950/95 backdrop-blur-md border-orange-200/50 dark:border-orange-800/50 p-0 shadow-2xl overflow-hidden">
           <div className="flex flex-col h-full max-h-[80vh]">
-            <div className="flex items-center justify-between p-6 border-b border-orange-200/50 dark:border-orange-800/50">
-              <DialogTitle className="text-lg font-medium text-orange-900 dark:text-orange-100">
+            <div className="flex items-center justify-between p-3 border-b border-orange-200/50 dark:border-orange-800/50">
+              <DialogTitle className="text-3xl font-medium text-orange-900 dark:text-orange-100">
                 Control Panel
               </DialogTitle>
             </div>
@@ -113,28 +113,28 @@ export function UnifiedMenu({ currentTrack }: UnifiedMenuProps) {
               <PomodoroTimer onNotification={handleNotification} />
 
               <Card className="bg-gradient-to-br from-white/50 to-orange-50/50 dark:from-black/20 dark:to-orange-950/50 backdrop-blur-sm border-orange-200/50 dark:border-orange-800/50 p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-[-10px]">
                   <Music className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                  <h3 className="text-sm font-medium text-orange-900 dark:text-orange-100">
+                  <h3 className="text-2xl font-medium text-orange-900 dark:text-orange-100">
                     Now Playing
                   </h3>
                 </div>
                 {currentTrack ? (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-orange-800 dark:text-orange-200 truncate">
+                  <div className="space-y-1">
+                    <p className="text-lg font-medium text-orange-800 dark:text-orange-200 truncate">
                       {currentTrack.title}
                     </p>
-                    <p className="text-xs text-orange-600 dark:text-orange-400 truncate">
+                    <p className="text-lg text-orange-600 dark:text-orange-400 truncate">
                       {currentTrack.artist}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400">
+                    <div className="flex items-center gap-2 text-lg text-orange-600 dark:text-orange-400">
                       {currentTrack.url.includes("youtube")
                         ? "📺 YouTube"
                         : "🎵 Audio"}
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-orange-600 dark:text-orange-400">
+                  <p className="text-lg text-orange-600 dark:text-orange-400">
                     No track playing
                   </p>
                 )}
@@ -143,7 +143,7 @@ export function UnifiedMenu({ currentTrack }: UnifiedMenuProps) {
               <Card className="bg-gradient-to-br from-white/50 to-orange-50/50 dark:from-black/20 dark:to-orange-950/50 backdrop-blur-sm border-orange-200/50 dark:border-orange-800/50 p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
                   <Volume2 className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                  <h3 className="text-sm font-medium text-orange-900 dark:text-orange-100">
+                  <h3 className="text-2xl font-medium text-orange-900 dark:text-orange-100">
                     Ambient Sounds
                   </h3>
                 </div>
@@ -195,8 +195,8 @@ function AmbientSoundControl({
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-orange-100/30 dark:bg-orange-900/30 border border-orange-200/30 dark:border-orange-800/30">
       <div className="flex items-center gap-2">
-        <span className="text-sm">{icon}</span>
-        <span className="text-xs font-medium text-orange-900 dark:text-orange-100">
+        <span className="text-lg">{icon}</span>
+        <span className="text-lg font-medium text-orange-900 dark:text-orange-100">
           {label}
         </span>
       </div>
@@ -214,7 +214,7 @@ function AmbientSoundControl({
           variant={isPlaying ? "default" : "ghost"}
           size="sm"
           onClick={onToggle}
-          className={`h-6 w-12 text-xs font-medium ${
+          className={`h-6 w-12 text-lg font-medium ${
             isPlaying
               ? "bg-orange-500 hover:bg-orange-600 text-white"
               : "text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900"

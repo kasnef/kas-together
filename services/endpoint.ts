@@ -4,6 +4,8 @@ export default {
   check_me: "/api/user/check-me",
 
   // room
+  room_pagination: "/api/room/pagination",
+  room_detail: "/api/room/detail",
   create_room: "/api/room/create",
   update_room: "/api/room/update",
   delete_room: "/api/room/delete",

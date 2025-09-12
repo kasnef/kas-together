@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -20,16 +20,29 @@ import {
   Gift,
   Lock,
   Eye,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { useRoomPagination } from "@/hooks/room/useRoomPagination";
+import { Helper } from "@/utils/helper";
 
-interface Room {
-  id: string;
+export type RoomType = "PUBLIC" | "PRIVATE";
+
+export interface CreateRoom {
   name: string;
   description: string;
-  userCount: number;
-  currentTrack: string;
-  isPrivate: boolean;
-  password?: string;
+  roomType: RoomType;
+  userLocalTime: string;
+}
+export interface Room {
+  room_id: string;
+  room_name: string;
+  room_description: string;
+  room_type: RoomType;
+  room_password: string | null;
+  room_createdAt: string;
+  room_ownerId: string;
+  memberCount: number;
 }
 
 interface Message {
@@ -47,33 +60,9 @@ interface User {
 }
 
 export function RoomSystem() {
+  const [currentPage, setCurrentPage] = useState(1);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
-  const [rooms, setRooms] = useState<Room[]>([
-    {
-      id: "1",
-      name: "Chill Lofi Vibes",
-      description: "Relaxing beats for studying and working",
-      userCount: 24,
-      currentTrack: "Midnight City - Lofi Remix",
-      isPrivate: false,
-    },
-    {
-      id: "2",
-      name: "Study Session",
-      description: "Focus music and productivity chat",
-      userCount: 18,
-      currentTrack: "Rain & Piano",
-      isPrivate: false,
-    },
-    {
-      id: "3",
-      name: "Late Night Coding",
-      description: "Beats for night owls",
-      userCount: 12,
-      currentTrack: "Synthwave Dreams",
-      isPrivate: false,
-    },
-  ]);
+  const [rooms, setRooms] = useState<CreateRoom[]>([]);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -99,6 +88,7 @@ export function RoomSystem() {
   const [newMessage, setNewMessage] = useState("");
   const [roomName, setRoomName] = useState("");
   const [roomDescription, setRoomDescription] = useState("");
+  const [roomType, setRoomType] = useState<RoomType>("PUBLIC");
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [roomPassword, setRoomPassword] = useState("");
   const [isPrivateRoom, setIsPrivateRoom] = useState(false);
@@ -111,17 +101,50 @@ export function RoomSystem() {
   const [isLocked, setIsLocked] = useState(false);
   const [lockEndTime, setLockEndTime] = useState<Date | null>(null);
 
+  const userLocalTime = Helper.getNowTz();
+
+  // handle pagination
+  const roomsPerPage = 10;
+  const skip = (currentPage - 1) * roomsPerPage;
+  const {
+    data,
+    isLoading: queryLoading,
+    error,
+  } = useRoomPagination(skip, roomsPerPage);
+  console.log('data ===> ', data)
+  const publicRooms = useMemo(() => {
+    return data?.filter((room: Room) => room.room_type !== "PRIVATE");
+  }, [rooms]);
+  const totalPages = Math.ceil(publicRooms?.length / roomsPerPage);
+  const indexOfLastRoom = currentPage * roomsPerPage;
+  const indexOfFirstRoom = indexOfLastRoom - roomsPerPage;
+
+  const currentPublicRooms = publicRooms?.slice(
+    indexOfFirstRoom,
+    indexOfLastRoom
+  );
+  // go to next page
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // back to previous page
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   const handleCreateRoom = () => {
     if (roomName.trim()) {
       const roomId = Math.random().toString(36).substr(2, 8).toUpperCase();
-      const newRoom: Room = {
-        id: roomId,
+      const newRoom: CreateRoom = {
         name: roomName,
         description: roomDescription,
-        userCount: 1,
-        currentTrack: "No track playing",
-        isPrivate: isPrivateRoom,
-        password: isPrivateRoom ? roomPassword : undefined,
+        roomType: roomType,
+        userLocalTime: userLocalTime,
       };
       setRooms([...rooms, newRoom]);
       setRoomName("");
@@ -141,24 +164,24 @@ export function RoomSystem() {
     }
   };
 
-  const handleSearchRoom = () => {
-    const room = rooms.find(
-      (r) => r.id.toLowerCase() === searchRoomId.toLowerCase()
-    );
-    if (room) {
-      setFoundRoom(room);
-    } else {
-      setNotification({
-        isOpen: true,
-        type: "error",
-        title: "Room Not Found",
-        message: "No room found with that ID.",
-      });
-    }
-  };
+  // const handleSearchRoom = () => {
+  //   const room = rooms.find(
+  //     (r) => r.id.toLowerCase() === searchRoomId.toLowerCase()
+  //   );
+  //   if (room) {
+  //     setFoundRoom(room);
+  //   } else {
+  //     setNotification({
+  //       isOpen: true,
+  //       type: "error",
+  //       title: "Room Not Found",
+  //       message: "No room found with that ID.",
+  //     });
+  //   }
+  // };
 
   const handleJoinRoom = (room: Room) => {
-    if (room.isPrivate) {
+    if (room.room_type === "PRIVATE") {
       setSelectedRoom(room);
       setShowPasswordModal(true);
     } else {
@@ -167,7 +190,7 @@ export function RoomSystem() {
         isOpen: true,
         type: "info",
         title: "Joined Room",
-        message: `Welcome to "${room.name}"! Enjoy the music and chat.`,
+        message: `Welcome to "${room.room_name}"! Enjoy the music and chat.`,
       });
     }
   };
@@ -186,7 +209,7 @@ export function RoomSystem() {
       return;
     }
 
-    if (selectedRoom && selectedRoom.password === joinPassword) {
+    if (selectedRoom && selectedRoom.room_password === joinPassword) {
       setCurrentRoom(selectedRoom);
       setShowPasswordModal(false);
       setJoinPassword("");
@@ -196,7 +219,7 @@ export function RoomSystem() {
         isOpen: true,
         type: "success",
         title: "Joined Private Room",
-        message: `Welcome to "${selectedRoom.name}"!`,
+        message: `Welcome to "${selectedRoom.room_name}"!`,
       });
     } else {
       const newAttempts = passwordAttempts + 1;
@@ -330,17 +353,19 @@ export function RoomSystem() {
     return (
       <div className="space-y-4">
         {/* Room Header */}
-        <div className="flex items-center justify-between">
+        <div className="text-2xl flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-card-foreground">
-              {currentRoom.name}
+              {currentRoom.room_name}
             </h3>
-            <p className="text-sm text-muted-foreground">
-              {currentRoom.description}
+            <p className="text-lg text-muted-foreground">
+              {currentRoom.room_description}
             </p>
           </div>
           <Button variant="outline" onClick={() => setCurrentRoom(null)}>
-            Leave Room
+            <p className="text-lg">
+              Leave Room
+            </p>
           </Button>
         </div>
 
@@ -348,8 +373,8 @@ export function RoomSystem() {
         <Card className="p-3 bg-primary/10">
           <div className="flex items-center gap-2">
             <Music className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">
-              Now Playing: {currentRoom.currentTrack}
+            <span className="text-lg font-medium">
+              Now Playing: 
             </span>
           </div>
         </Card>
@@ -358,9 +383,9 @@ export function RoomSystem() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
-              <span className="font-medium">Chat</span>
-              <Badge variant="secondary">{currentRoom.userCount} users</Badge>
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-lg font-medium">Chat</span>
+              <Badge variant="secondary" className="text-sm">{currentRoom.memberCount} users</Badge>
             </div>
 
             <div className="flex items-center gap-2">
@@ -371,7 +396,7 @@ export function RoomSystem() {
                 className="gap-1"
               >
                 <Zap className="h-3 w-3" />
-                Auto Meme
+                <p className="text-lg">Auto Meme</p>
               </Button>
               <Button
                 onClick={handleAutoMeme}
@@ -380,7 +405,7 @@ export function RoomSystem() {
                 className="gap-1 bg-transparent"
               >
                 <Gift className="h-3 w-3" />
-                Send Meme
+                <p className="text-lg">Send Meme</p>
               </Button>
             </div>
           </div>
@@ -390,7 +415,7 @@ export function RoomSystem() {
               {messages.map((message) => (
                 <div key={message.id} className="flex gap-2">
                   <span
-                    className={`font-medium text-primary text-sm cursor-pointer hover:underline ${
+                    className={`font-medium text-primary text-lg cursor-pointer hover:underline ${
                       message.user !== "You" ? "hover:text-secondary" : ""
                     }`}
                     onClick={() => handleUserClick(message.user)}
@@ -401,7 +426,7 @@ export function RoomSystem() {
                     {message.user}:
                   </span>
                   <span
-                    className={`text-sm ${
+                    className={`text-lg ${
                       message.type === "meme" || message.type === "auto-meme"
                         ? "text-2xl"
                         : ""
@@ -423,7 +448,7 @@ export function RoomSystem() {
               className="flex-1"
             />
             <Button onClick={handleSendMeme} variant="outline" size="icon">
-              <Smile className="h-4 w-4" />
+              <Smile className="h-5 w-5" />
             </Button>
             <Button onClick={handleSendMessage} size="icon">
               <Send className="h-4 w-4" />
@@ -433,7 +458,7 @@ export function RoomSystem() {
 
         {/* Online Users */}
         <Card className="p-4">
-          <h4 className="font-medium mb-3 flex items-center gap-2">
+          <h4 className="text-lg font-medium flex items-center gap-2">
             <Users className="h-4 w-4" />
             Online Users
           </h4>
@@ -444,7 +469,7 @@ export function RoomSystem() {
                 <Badge
                   key={user.id}
                   variant="secondary"
-                  className="cursor-pointer hover:bg-primary/20 transition-colors"
+                  className="text-lg cursor-pointer hover:bg-primary/20 transition-colors"
                   onClick={() => handleUserClick(user.name)}
                   title="Click to send a meme!"
                 >
@@ -475,20 +500,20 @@ export function RoomSystem() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-foreground">Chat Rooms</h3>
+        <h3 className="text-2xl font-bold text-foreground">Chat Rooms</h3>
         <Button
           onClick={() => setShowCreateRoom(true)}
-          className="gap-2 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg"
+          className="gap-2 from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg"
         >
           <Plus className="h-4 w-4" />
-          Create Room
+          <p className="text-lg">Creat room</p>
         </Button>
       </div>
 
       {/* Create Room */}
       {showCreateRoom && (
         <Card className="p-6 bg-gradient-to-br from-background to-accent/20 border-primary/20 shadow-xl">
-          <h3 className="font-semibold mb-4 text-lg">Create New Room</h3>
+          <h3 className="font-semibold mb-4 text-2xl">Create New Room</h3>
           <div className="space-y-4">
             <Input
               placeholder="Room name"
@@ -509,7 +534,7 @@ export function RoomSystem() {
                 flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all duration-200 border-2
                 ${
                   !isPrivateRoom
-                    ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-primary text-primary shadow-md"
+                    ? "from-primary/20 to-secondary/20 border-primary text-primary shadow-md"
                     : "bg-accent/30 border-muted hover:border-primary/50 hover:bg-accent/50"
                 }
               `}
@@ -536,7 +561,7 @@ export function RoomSystem() {
                   )}
                 </div>
                 <Eye className="h-5 w-5" />
-                <span className="font-medium">Public Room</span>
+                <span className="text-[16px] font-medium">Public Room</span>
               </label>
 
               <label
@@ -544,7 +569,7 @@ export function RoomSystem() {
                 flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all duration-200 border-2
                 ${
                   isPrivateRoom
-                    ? "bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-500 text-amber-600 dark:text-amber-400 shadow-md"
+                    ? "from-amber-500/20 to-orange-500/20 border-amber-500 text-amber-600 dark:text-amber-400 shadow-md"
                     : "bg-accent/30 border-muted hover:border-primary/50 hover:bg-accent/50"
                 }
               `}
@@ -571,12 +596,12 @@ export function RoomSystem() {
                   )}
                 </div>
                 <Lock className="h-5 w-5" />
-                <span className="font-medium">Private Room</span>
+                <span className="text-[16px] font-medium">Private Room</span>
               </label>
             </div>
 
             {isPrivateRoom && (
-              <div className="p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-xl border border-amber-500/30">
+              <div className="p-4 from-amber-500/10 to-orange-500/10 rounded-xl border border-amber-500/30">
                 <Input
                   type="password"
                   placeholder="Enter room password"
@@ -584,7 +609,7 @@ export function RoomSystem() {
                   onChange={(e) => setRoomPassword(e.target.value)}
                   className="bg-background/70 border-amber-500/30 focus:border-amber-500"
                 />
-                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
                   <Lock className="h-3 w-3" />
                   This password will be required for users to join your private
                   room
@@ -594,16 +619,16 @@ export function RoomSystem() {
             <div className="flex gap-3 pt-2">
               <Button
                 onClick={handleCreateRoom}
-                className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+                className="flex-1 from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
               >
-                Create Room
+                <p className="text-lg">Create Room</p>
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowCreateRoom(false)}
                 className="border-primary/30"
               >
-                Cancel
+                <p className="text-lg">Cancel</p>
               </Button>
             </div>
           </div>
@@ -611,14 +636,6 @@ export function RoomSystem() {
       )}
 
       <Card className="p-6 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/10 border-primary/20 shadow-lg">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-primary/20 rounded-lg">
-            <Search className="h-5 w-5 text-primary" />
-          </div>
-          <h4 className="font-semibold text-lg text-primary">
-            Find Room by ID
-          </h4>
-        </div>
         <div className="flex gap-3">
           <div className="relative flex-1">
             <Input
@@ -626,19 +643,19 @@ export function RoomSystem() {
               value={searchRoomId}
               onChange={(e) => setSearchRoomId(e.target.value.toUpperCase())}
               className="pl-4 pr-4 bg-background/90 border-primary/40 focus:border-primary focus:ring-primary/20 shadow-sm"
-              maxLength={8}
+              maxLength={15}
             />
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-              <span className="text-xs text-muted-foreground">8 chars</span>
+              <span className="text-sm text-muted-foreground">15 chars</span>
             </div>
           </div>
           <Button
-            onClick={handleSearchRoom}
+            onClick={() => {}}
             variant="default"
-            className="px-6 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
+            className="px-6 from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
           >
             <Search className="h-4 w-4 mr-2" />
-            Search
+            <p className="text-lg">Search</p>
           </Button>
         </div>
         {foundRoom && (
@@ -646,10 +663,10 @@ export function RoomSystem() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <h5 className="font-semibold text-foreground text-lg">
-                  {foundRoom.name}
+                  {foundRoom.room_name}
                 </h5>
-                {foundRoom.isPrivate && (
-                  <div className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-600 dark:text-amber-400 rounded-full text-sm font-medium border border-amber-500/30">
+                {foundRoom.room_type === "PRIVATE" && (
+                  <div className="flex items-center gap-1 px-3 py-1 from-amber-500/20 to-orange-500/20 text-amber-600 dark:text-amber-400 rounded-full text-sm font-medium border border-amber-500/30">
                     <Lock className="h-3 w-3" />
                     Private
                   </div>
@@ -659,18 +676,18 @@ export function RoomSystem() {
                   className="gap-1 bg-primary/20 text-primary border border-primary/30"
                 >
                   <Users className="h-3 w-3" />
-                  {foundRoom.userCount}
+                  {foundRoom.memberCount}
                 </Badge>
               </div>
               <Button
                 onClick={() => handleJoinRoom(foundRoom)}
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
+                className="from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
               >
-                Join Room
+                <p className="text-lg">Join Room</p>
               </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-3 pl-1">
-              {foundRoom.description}
+              {foundRoom.room_description}
             </p>
           </div>
         )}
@@ -678,45 +695,76 @@ export function RoomSystem() {
 
       {/* Public Room List */}
       <div className="space-y-4">
-        <h4 className="font-semibold text-lg text-foreground">Public Rooms</h4>
+        <h4 className="font-semibold text-2xl text-foreground">Public Rooms</h4>
         <div className="grid gap-4">
-          {rooms
-            .filter((room) => !room.isPrivate)
-            .map((room) => (
-              <Card
-                key={room.id}
-                className="p-5 hover:bg-accent/50 cursor-pointer transition-all duration-200 border-primary/10 hover:border-primary/30 hover:shadow-md"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-semibold text-lg">{room.name}</h4>
-                      <Badge
-                        variant="secondary"
-                        className="gap-1 bg-primary/20 text-primary"
-                      >
-                        <Users className="h-3 w-3" />
-                        {room.userCount}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {room.description}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Music className="h-3 w-3" />
-                      <span>{room.currentTrack}</span>
-                    </div>
+          {currentPublicRooms?.map((room: Room) => (
+            <Card
+              key={room.room_id}
+              className="p-5 hover:bg-accent/50 cursor-pointer transition-all duration-200 border-primary/10 hover:border-primary/30 hover:shadow-md"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h4 className="font-semibold text-xl">{room.room_name}</h4>
+                    <Badge
+                      variant="secondary"
+                      className="gap-1 text-sm bg-primary/20 text-primary"
+                    >
+                      <Users className="h-3 w-3" />
+                      {room.memberCount}
+                    </Badge>
                   </div>
-                  <Button
-                    onClick={() => handleJoinRoom(room)}
-                    className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
-                  >
-                    Join
-                  </Button>
+                  <p className="text-lg text-muted-foreground mb-3">
+                    {room.room_description}
+                  </p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Music className="h-3 w-3" />
+                    <span></span>
+                  </div>
                 </div>
-              </Card>
-            ))}
+                <Button
+                  onClick={() => handleJoinRoom(room)}
+                  className="from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
+                >
+                  <p className="text-lg">Join</p>
+                </Button>
+              </div>
+            </Card>
+          ))}
+          {queryLoading && <p className="text-lg">Loading rooms...</p>}
+          {!queryLoading && currentPublicRooms?.length === 0 && (
+            <p className="text-center text-lg text-muted-foreground py-8">
+              No public rooms found.
+            </p>
+          )}
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <p className="text-lg">Previous</p>
+            </Button>
+            <span className="text-lg font-medium text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="gap-2"
+            >
+              <p className="text-lg">Next</p>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Password Modal for Private Rooms */}
@@ -725,11 +773,11 @@ export function RoomSystem() {
           <Card className="p-6 w-full max-w-md shadow-2xl">
             <div className="flex items-center gap-2 mb-4">
               <Lock className="h-5 w-5" />
-              <h3 className="font-semibold">Enter Password</h3>
+              <h3 className="text-xl font-semibold">Enter Password</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-lg text-muted-foreground mb-4">
               This is a private room. Please enter the password to join "
-              {selectedRoom.name}".
+              {selectedRoom.room_name}".
             </p>
             <div className="space-y-3">
               <Input
@@ -738,15 +786,19 @@ export function RoomSystem() {
                 value={joinPassword}
                 onChange={(e) => setJoinPassword(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handlePasswordSubmit()}
-                disabled={!!(isLocked && lockEndTime && new Date() < lockEndTime)}
+                disabled={
+                  !!(isLocked && lockEndTime && new Date() < lockEndTime)
+                }
               />
               <div className="flex gap-2">
                 <Button
                   onClick={handlePasswordSubmit}
                   className="flex-1"
-                  disabled={!!(isLocked && lockEndTime && new Date() < lockEndTime)}
+                  disabled={
+                    !!(isLocked && lockEndTime && new Date() < lockEndTime)
+                  }
                 >
-                  Join Room
+                  <p className="text-lg">Join Room</p>
                 </Button>
                 <Button
                   variant="outline"
@@ -756,11 +808,11 @@ export function RoomSystem() {
                     setSelectedRoom(null);
                   }}
                 >
-                  Cancel
+                  <p className="text-lg">Cancel</p>
                 </Button>
               </div>
               {passwordAttempts > 0 && (
-                <p className="text-sm text-destructive">
+                <p className="text-lg text-destructive">
                   Failed attempts: {passwordAttempts}/10
                 </p>
               )}
