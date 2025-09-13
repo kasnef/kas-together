@@ -65,9 +65,13 @@ interface User {
   isOnline: boolean;
 }
 
-export function RoomSystem() {
+type RoomSystemProps = {
+  currentRoom: Room | null;
+  setCurrentRoom: React.Dispatch<React.SetStateAction<Room | null>>;
+};
+
+export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentRoom, setCurrentRoom] = useState<any | null>(null);
   const [rooms, setRooms] = useState<CreateRoom[]>([]);
   const [messages, setMessages] = useState<Message[]>([
     {
