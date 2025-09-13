@@ -10,6 +10,7 @@ export default {
   update_room: "/api/room/update",
   delete_room: "/api/room/delete",
   join_room: "/api/room/join-room",
+  leave_room: "/api/room/leave-room",
   kick_member: "/api/room/kick-member",
 
   // music

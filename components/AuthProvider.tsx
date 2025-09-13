@@ -7,6 +7,7 @@ import { generateUser } from "@/services/api/createUser.api";
 type User = { id: string; username: string } | null;
 
 interface AuthContextType {
+  userToken: string;
   setUser: (user: User | null) => void;
   logout: () => void;
 }
@@ -23,7 +24,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
-    if (token) {}
+    if (token) {
+    }
     setChecked(true);
   }, []);
 
@@ -39,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
       {!localStorage.getItem("auth_token") && (
         <UsernameModal
-          onSubmit={ async (username) => {
+          onSubmit={async (username) => {
             const genUser = await generateUser(username);
             if (!genUser) {
               console.log("Error when creating user!");

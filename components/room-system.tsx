@@ -22,9 +22,15 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  Crown,
 } from "lucide-react";
 import { useRoomPagination } from "@/hooks/room/useRoomPagination";
 import { Helper } from "@/utils/helper";
+import { useRoomDetailMutation } from "@/hooks/room/useRoomDetail";
+import { useLeaveRoom } from "@/hooks/room/useLeaveRoom";
+import { useJoinRoom } from "@/hooks/room/useJoinRoom";
+import Error from "next/error";
+import LoadingScreen from "./ui/loading";
 
 export type RoomType = "PUBLIC" | "PRIVATE";
 
@@ -61,7 +67,7 @@ interface User {
 
 export function RoomSystem() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
+  const [currentRoom, setCurrentRoom] = useState<any | null>(null);
   const [rooms, setRooms] = useState<CreateRoom[]>([]);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -79,12 +85,18 @@ export function RoomSystem() {
       type: "message",
     },
   ]);
-  const [users] = useState<User[]>([
-    { id: "1", name: "Alex", isOnline: true },
-    { id: "2", name: "Sarah", isOnline: true },
-    { id: "3", name: "Mike", isOnline: false },
-    { id: "4", name: "Emma", isOnline: true },
-  ]);
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    type: "success" | "error" | "info";
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    type: "info",
+    title: "",
+    message: "",
+  });
+
   const [newMessage, setNewMessage] = useState("");
   const [roomName, setRoomName] = useState("");
   const [roomDescription, setRoomDescription] = useState("");
@@ -100,21 +112,35 @@ export function RoomSystem() {
   const [passwordAttempts, setPasswordAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [lockEndTime, setLockEndTime] = useState<Date | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
+  const userToken = localStorage.getItem("auth_token");
   const userLocalTime = Helper.getNowTz();
 
-  // handle pagination
+  // #region handle pagination
   const roomsPerPage = 10;
   const skip = (currentPage - 1) * roomsPerPage;
-  const {
-    data,
-    isLoading: queryLoading,
-    error,
-  } = useRoomPagination(skip, roomsPerPage);
-  console.log('data ===> ', data)
+  const { data: paginatinoData, isLoading: queryLoading } = useRoomPagination(
+    skip,
+    roomsPerPage
+  );
+  // #endregion
+
+  // #region handle detail room
+  const { data: detailData, onDetailRoom } = useRoomDetailMutation();
+  // #endregion
+
+  // #region handle join room
+  const { onJoinRoom } = useJoinRoom();
+  // #endregion
+
+  // #region handle leave room
+  const { onLeaveRoom } = useLeaveRoom();
+  // #endregion
+
   const publicRooms = useMemo(() => {
-    return data?.filter((room: Room) => room.room_type !== "PRIVATE");
-  }, [rooms]);
+    return paginatinoData;
+  }, [paginatinoData]);
   const totalPages = Math.ceil(publicRooms?.length / roomsPerPage);
   const indexOfLastRoom = currentPage * roomsPerPage;
   const indexOfFirstRoom = indexOfLastRoom - roomsPerPage;
@@ -180,22 +206,101 @@ export function RoomSystem() {
   //   }
   // };
 
-  const handleJoinRoom = (room: Room) => {
+  const joinRoomHandler = async (
+    room: Room,
+    password = ""
+  ): Promise<boolean> => {
+    try {
+      if (!userToken) {
+        throw new Error({
+          statusCode: 401,
+          message: "Cannot found token!",
+        });
+      }
+
+      const res = await onJoinRoom({
+        id: room.room_id,
+        token: userToken,
+        userLocalTime,
+        password,
+      });
+
+      if (res.status === 201) {
+        setCurrentRoom(room);
+        setNotification({
+          isOpen: true,
+          type: "success",
+          title: "Joined Room",
+          message: `Welcome to "${room.room_name}"!`,
+        });
+        return true;
+      } else {
+        if (res.status === 401) {
+          setNotification({
+            isOpen: true,
+            type: "error",
+            title: "Wrong Password",
+            message: res.message || "Password incorrect.",
+          });
+        } else {
+          setNotification({
+            isOpen: true,
+            type: "error",
+            title: "Join Failed",
+            message: res.message || "Unable to join this room.",
+          });
+        }
+        return false;
+      }
+    } catch (err: any) {
+      setNotification({
+        isOpen: true,
+        type: "error",
+        title: "Join Failed",
+        message: err.message || "Unexpected error occurred.",
+      });
+      return false;
+    }
+  };
+
+  const handleJoinRoom = async (room: Room) => {
     if (room.room_type === "PRIVATE") {
       setSelectedRoom(room);
       setShowPasswordModal(true);
     } else {
-      setCurrentRoom(room);
+      await joinRoomHandler(room);
+    }
+  };
+
+  const handleLeaveRoom = async (roomId: string) => {
+    if (!userToken) {
+      if (!userToken) {
+        throw new Error({
+          statusCode: 401,
+          message: "Cannot found token!",
+        });
+      }
+    }
+
+    try {
+      await onLeaveRoom({
+        id: roomId,
+        token: userToken,
+      });
+      setCurrentRoom(null);
+    } catch {
       setNotification({
         isOpen: true,
-        type: "info",
-        title: "Joined Room",
-        message: `Welcome to "${room.room_name}"! Enjoy the music and chat.`,
+        type: "error",
+        title: "Error when leave room!",
+        message: "Cannot leave this room, muahehehe (￣_￣|||)",
       });
     }
   };
 
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
+    if (!selectedRoom) return;
+
     if (isLocked && lockEndTime && new Date() < lockEndTime) {
       const remainingTime = Math.ceil(
         (lockEndTime.getTime() - new Date().getTime()) / 60000
@@ -209,7 +314,9 @@ export function RoomSystem() {
       return;
     }
 
-    if (selectedRoom && selectedRoom.room_password === joinPassword) {
+    const success = await joinRoomHandler(selectedRoom, joinPassword);
+
+    if (success) {
       setCurrentRoom(selectedRoom);
       setShowPasswordModal(false);
       setJoinPassword("");
@@ -273,17 +380,6 @@ export function RoomSystem() {
     isOpen: false,
     fromUser: "",
     toUser: "",
-  });
-  const [notification, setNotification] = useState<{
-    isOpen: boolean;
-    type: "success" | "error" | "info";
-    title: string;
-    message: string;
-  }>({
-    isOpen: false,
-    type: "info",
-    title: "",
-    message: "",
   });
   const [autoMemeEnabled, setAutoMemeEnabled] = useState(false);
 
@@ -349,6 +445,24 @@ export function RoomSystem() {
     }
   };
 
+  useEffect(() => {
+    const fetchRoomDetail = async () => {
+      if (currentRoom && userToken) {
+        await onDetailRoom({
+          token: userToken,
+          roomId: currentRoom.room_id,
+          dto: {},
+        });
+        setIsLoading(false);
+      }
+    };
+    fetchRoomDetail();
+  }, [currentRoom, userToken, onDetailRoom]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   if (currentRoom) {
     return (
       <div className="space-y-4">
@@ -356,16 +470,18 @@ export function RoomSystem() {
         <div className="text-2xl flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-card-foreground">
-              {currentRoom.room_name}
+              {detailData?.name}
             </h3>
             <p className="text-lg text-muted-foreground">
-              {currentRoom.room_description}
+              {detailData?.description}
             </p>
           </div>
-          <Button variant="outline" onClick={() => setCurrentRoom(null)}>
-            <p className="text-lg">
-              Leave Room
-            </p>
+          <Button
+            className="cursor-pointer"
+            variant="outline"
+            onClick={() => handleLeaveRoom(detailData?.id)}
+          >
+            <p className="text-lg">Leave Room</p>
           </Button>
         </div>
 
@@ -373,9 +489,7 @@ export function RoomSystem() {
         <Card className="p-3 bg-primary/10">
           <div className="flex items-center gap-2">
             <Music className="h-4 w-4 text-primary" />
-            <span className="text-lg font-medium">
-              Now Playing: 
-            </span>
+            <span className="text-lg font-medium">Now Playing:</span>
           </div>
         </Card>
 
@@ -385,7 +499,9 @@ export function RoomSystem() {
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
               <span className="text-lg font-medium">Chat</span>
-              <Badge variant="secondary" className="text-sm">{currentRoom.memberCount} users</Badge>
+              <Badge variant="secondary" className="text-sm">
+                {detailData?.members.length} users
+              </Badge>
             </div>
 
             <div className="flex items-center gap-2">
@@ -463,19 +579,22 @@ export function RoomSystem() {
             Online Users
           </h4>
           <div className="flex flex-wrap gap-2">
-            {users
-              .filter((user) => user.isOnline)
-              .map((user) => (
-                <Badge
-                  key={user.id}
-                  variant="secondary"
-                  className="text-lg cursor-pointer hover:bg-primary/20 transition-colors"
-                  onClick={() => handleUserClick(user.name)}
-                  title="Click to send a meme!"
-                >
-                  {user.name}
-                </Badge>
-              ))}
+            {detailData?.members.map((member: any) => (
+              <Badge
+                key={member.id}
+                variant="secondary"
+                className={`text-lg cursor-pointer hover:bg-primary/20 transition-colors ${
+                  member.role === "OWNER" ? "bg-primary text-white" : ""
+                }`}
+                onClick={() => handleUserClick(member.user.name)}
+                title="Click to send a meme!"
+              >
+                {member.user.name}{" "}
+                {member.role === "OWNER" && (
+                  <Crown className="text-yellow-300" />
+                )}
+              </Badge>
+            ))}
           </div>
         </Card>
 
@@ -503,7 +622,7 @@ export function RoomSystem() {
         <h3 className="text-2xl font-bold text-foreground">Chat Rooms</h3>
         <Button
           onClick={() => setShowCreateRoom(true)}
-          className="gap-2 from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg"
+          className="gap-2 cursor-pointer from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg"
         >
           <Plus className="h-4 w-4" />
           <p className="text-lg">Creat room</p>
@@ -635,6 +754,7 @@ export function RoomSystem() {
         </Card>
       )}
 
+      {/* Search Room */}
       <Card className="p-6 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/10 border-primary/20 shadow-lg">
         <div className="flex gap-3">
           <div className="relative flex-1">
@@ -652,7 +772,7 @@ export function RoomSystem() {
           <Button
             onClick={() => {}}
             variant="default"
-            className="px-6 from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
+            className="px-6 cursor-pointer from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
           >
             <Search className="h-4 w-4 mr-2" />
             <p className="text-lg">Search</p>
@@ -700,7 +820,7 @@ export function RoomSystem() {
           {currentPublicRooms?.map((room: Room) => (
             <Card
               key={room.room_id}
-              className="p-5 hover:bg-accent/50 cursor-pointer transition-all duration-200 border-primary/10 hover:border-primary/30 hover:shadow-md"
+              className="p-5 hover:bg-accent/50 transition-all duration-200 border-primary/10 hover:border-primary/30 hover:shadow-md"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -724,7 +844,7 @@ export function RoomSystem() {
                 </div>
                 <Button
                   onClick={() => handleJoinRoom(room)}
-                  className="from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
+                  className="from-primary cursor-pointer to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-md"
                 >
                   <p className="text-lg">Join</p>
                 </Button>

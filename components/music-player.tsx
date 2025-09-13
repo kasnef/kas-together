@@ -128,7 +128,8 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
   };
 
   const handleAddTrack = async (url: string) => {
-    if (!url.trim()) return;
+    const cleanUrl = url.replace(/&.*$/, "");
+    if (!cleanUrl.trim()) return;
 
     try {
       const info: Track = await getYtInfo(url);
@@ -280,7 +281,14 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
         />
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-amber-50/95 to-orange-50/95 dark:from-amber-950/95 dark:to-orange-950/95 backdrop-blur-sm border-t border-amber-200/50 dark:border-amber-800/50 p-1 z-50 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 p-1 z-50">
+        <div
+          className="absolute inset-0 -z-10
+                  bg-gradient-to-r from-amber-50 to-orange-50
+                  dark:from-amber-950 dark:to-orange-950
+                  opacity-100 backdrop-blur-sm
+                  border-t border-amber-200/50 dark:border-amber-800/50"
+        ></div>
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
           <div
             className="min-w-0 max-w-[220px] cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-900/50 rounded-lg p-2 transition-colors"

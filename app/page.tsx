@@ -124,18 +124,6 @@ export default function HomePage() {
 
         <main className="max-w-7xl mx-auto p-6">
           <div className="max-w-4xl mx-auto">
-            {activeSection === "music" && (
-              <Card className="glass-effect p-6 lofi-glow">
-                <h2 className="text-3xl font-pixel text-card-foreground">
-                  Music Player
-                </h2>
-                <div className="text-lg text-muted-foreground font-pixel mb-4">
-                  Auto-playing server tracks. Add YouTube URLs for video
-                  backgrounds.
-                </div>
-              </Card>
-            )}
-
             {activeSection === "rooms" && (
               <Card className="glass-effect p-6 lofi-glow">
                 <RoomSystem />
