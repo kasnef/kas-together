@@ -127,7 +127,7 @@
     @apply bg-background text-foreground;
     /* Updated to use pixel font variable */
     font-family: var(--font-pixel), monospace;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1.6;
     /* Added smooth transition for theme changes */
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -139,6 +139,16 @@
   h4,
   h5,
   h6 {
+    font-family: var(--font-pixel), monospace;
+    font-weight: normal;
+  }
+
+  p {
+    font-family: var(--font-pixel), monospace;
+    font-weight: normal;
+  }
+
+  div {
     font-family: var(--font-pixel), monospace;
     font-weight: normal;
   }
@@ -207,4 +217,13 @@
     scrollbar-width: thin;
     scrollbar-color: var(--primary) var(--muted);
   }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+.animate-twinkle {
+  animation: twinkle infinite;
 }

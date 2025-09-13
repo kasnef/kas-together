@@ -73,8 +73,8 @@ export function NotificationModal({
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">{getIcon()}</div>
           <div className="flex-1">
-            <h3 className="font-semibold text-foreground mb-2">{title}</h3>
-            <p className="text-sm text-muted-foreground">{message}</p>
+            <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
+            <p className="text-lg text-muted-foreground">{message}</p>
           </div>
         </div>
       </Card>

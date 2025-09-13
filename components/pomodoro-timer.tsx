@@ -112,9 +112,9 @@ export function PomodoroTimer({ onNotification }: PomodoroTimerProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            <h3 className="font-medium text-amber-900 dark:text-amber-100">Pomodoro Timer</h3>
+            <h3 className="text-2xl font-medium text-amber-900 dark:text-amber-100">Pomodoro Timer</h3>
           </div>
-          <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900 px-2 py-1 rounded-full">
+          <div className="text-lg text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900 px-2 py-1 rounded-full">
             Sessions: {sessions}
           </div>
         </div>
@@ -127,7 +127,7 @@ export function PomodoroTimer({ onNotification }: PomodoroTimerProps) {
               variant={mode === key ? "default" : "ghost"}
               size="sm"
               onClick={() => switchMode(key as any)}
-              className={`flex-1 text-xs ${mode === key ? "bg-amber-500 text-white" : "text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800"}`}
+              className={`flex-1 text-lg ${mode === key ? "bg-amber-500 text-white" : "text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800"}`}
             >
               <setting.icon className="h-3 w-3 mr-1" />
               {setting.label}
@@ -138,8 +138,8 @@ export function PomodoroTimer({ onNotification }: PomodoroTimerProps) {
         {/* Timer Display */}
         <div className="text-center space-y-2">
           <div className="relative">
-            <div className="text-4xl font-mono font-bold text-amber-900 dark:text-amber-100">
-              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            <div className="font-mono font-bold text-amber-900 dark:text-amber-100">
+              <p className="text-5xl">{String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}</p>
             </div>
             <div className="w-full bg-amber-200/50 dark:bg-amber-800/50 rounded-full h-2 mt-2">
               <div
@@ -178,7 +178,7 @@ export function PomodoroTimer({ onNotification }: PomodoroTimerProps) {
             placeholder="Minutes"
             value={customMinutes}
             onChange={(e) => setCustomMinutes(e.target.value)}
-            className="flex-1 h-8 text-xs border-amber-200 dark:border-amber-800"
+            className="flex-1 h-8 border-amber-200 dark:border-amber-800"
             min="1"
             max="120"
           />
@@ -188,7 +188,7 @@ export function PomodoroTimer({ onNotification }: PomodoroTimerProps) {
             variant="outline"
             className="border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900 bg-transparent"
           >
-            Set
+            <p className="text-lg">Set</p>
           </Button>
         </div>
       </div>

@@ -214,16 +214,16 @@ export function TaskManager() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-3 text-center">
-          <div className="text-2xl font-bold text-primary">{tasks.length}</div>
-          <div className="text-xs text-muted-foreground">Total Tasks</div>
+          <div className="text-3xl font-bold text-primary">{tasks.length}</div>
+          <div className="text-lg text-muted-foreground mt-[-15px]">Total Tasks</div>
         </Card>
         <Card className="p-3 text-center">
-          <div className="text-2xl font-bold text-primary">{completedTasks}</div>
-          <div className="text-xs text-muted-foreground">Completed</div>
+          <div className="text-3xl font-bold text-primary">{completedTasks}</div>
+          <div className="text-lg text-muted-foreground mt-[-15px]">Completed</div>
         </Card>
         <Card className="p-3 text-center">
-          <div className="text-2xl font-bold text-primary">{formatTime(totalTime)}</div>
-          <div className="text-xs text-muted-foreground">Time Spent</div>
+          <div className="text-3xl font-bold text-primary">{formatTime(totalTime)}</div>
+          <div className="text-lg text-muted-foreground mt-[-15px]">Time Spent</div>
         </Card>
       </div>
 
@@ -258,7 +258,7 @@ export function TaskManager() {
 
       {/* Add Task */}
       <Card className="p-4">
-        <h3 className="font-semibold mb-3">Add New Task</h3>
+        <h3 className="text-2xl font-semibold">Add New Task</h3>
         <div className="space-y-3">
           <Input placeholder="Task title" value={newTaskTitle} onChange={(e) => setNewTaskTitle(e.target.value)} />
           <Input
@@ -268,7 +268,7 @@ export function TaskManager() {
           />
           <Button onClick={handleAddTask} className="w-full gap-2">
             <Plus className="h-4 w-4" />
-            Add Task
+            <p className="text-lg">Add Task</p>
           </Button>
         </div>
       </Card>
@@ -289,16 +289,16 @@ export function TaskManager() {
                 </Button>
 
                 <div className="flex-1">
-                  <h4 className={`font-medium ${task.completed ? "line-through" : ""}`}>{task.title}</h4>
-                  {task.description && <p className="text-sm text-muted-foreground mt-1">{task.description}</p>}
+                  <h4 className={`text-xl font-medium ${task.completed ? "line-through" : ""}`}>{task.title}</h4>
+                  {task.description && <p className="text-lg text-muted-foreground mt-1">{task.description}</p>}
 
                   <div className="flex items-center gap-4 mt-2">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1 text-lg text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       {formatTime(task.timeSpent)} / {formatTime(task.estimatedTime)}
                     </div>
                     {task.dueDate && (
-                      <div className="text-xs text-muted-foreground">Due: {task.dueDate.toLocaleDateString()}</div>
+                      <div className="text-lg text-muted-foreground">Due: {task.dueDate.toLocaleDateString()}</div>
                     )}
                   </div>
 
