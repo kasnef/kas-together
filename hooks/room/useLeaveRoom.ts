@@ -1,6 +1,6 @@
 import endpoint from "@/services/endpoint";
 import rootApi from "@/services/root.api";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface LeaveRoomDto {
   id: string;
@@ -8,6 +8,7 @@ export interface LeaveRoomDto {
 }
 
 export const useLeaveRoom = () => {
+  const queryClient = useQueryClient();
   const { data, mutateAsync, isPending } = useMutation({
     mutationKey: ["leave"],
     mutationFn: async (dto: LeaveRoomDto) => {
@@ -16,6 +17,11 @@ export const useLeaveRoom = () => {
         token: dto.token,
       });
       return res.data as any;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["room", 0, 10],
+      });
     },
   });
 

@@ -31,6 +31,7 @@ import { useLeaveRoom } from "@/hooks/room/useLeaveRoom";
 import { useJoinRoom } from "@/hooks/room/useJoinRoom";
 import Error from "next/error";
 import LoadingScreen from "./ui/loading";
+import { useCreateRoom } from "@/hooks/room/useCreateRoom";
 
 export type RoomType = "PUBLIC" | "PRIVATE";
 
@@ -134,6 +135,10 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   const { data: detailData, onDetailRoom } = useRoomDetailMutation();
   // #endregion
 
+  // #region handle create room
+  const { onCreateRoom } = useCreateRoom();
+  // #endregion
+
   // #region handle join room
   const { onJoinRoom } = useJoinRoom();
   // #endregion
@@ -167,30 +172,74 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
     }
   };
 
-  const handleCreateRoom = () => {
+  const handleCreateRoom = async () => {
     if (roomName.trim()) {
-      const roomId = Math.random().toString(36).substr(2, 8).toUpperCase();
       const newRoom: CreateRoom = {
         name: roomName,
         description: roomDescription,
         roomType: roomType,
         userLocalTime: userLocalTime,
       };
-      setRooms([...rooms, newRoom]);
-      setRoomName("");
-      setRoomDescription("");
-      setRoomPassword("");
-      setIsPrivateRoom(false);
-      setShowCreateRoom(false);
 
-      setNotification({
-        isOpen: true,
-        type: "success",
-        title: "Room Created!",
-        message: isPrivateRoom
-          ? `Private room "${newRoom.name}" created! Room ID: ${roomId}`
-          : `Public room "${newRoom.name}" created successfully!`,
-      });
+      try {
+        if (!userToken) {
+          throw new Error({
+            statusCode: 401,
+            message: "Cannot found token!",
+          });
+        }
+
+        const res = await onCreateRoom({
+          token: userToken,
+          dto: newRoom,
+        });
+
+        setCurrentRoom({
+          room_id: res.data.room.id,
+          room_name: res.data.room.name,
+          room_description: res.data.room.description,
+          room_type: res.data.room.room_type,
+          room_password: res.data.room.password ?? null,
+          room_createdAt: res.data.room.createdAt ?? "",
+          room_ownerId: res.data.room.ownerId ?? "",
+          memberCount: res.data.members.length,
+        });
+
+        setRooms([...rooms, newRoom]);
+        setRoomName("");
+        setRoomDescription("");
+        setRoomPassword("");
+        setIsPrivateRoom(false);
+        setShowCreateRoom(false);
+
+        setNotification({
+          isOpen: true,
+          type: "success",
+          title: "Room Created!",
+          message: isPrivateRoom
+            ? `Private room "${newRoom.name}" created! Room ID: ${res.data.room.id}`
+            : `Public room "${newRoom.name}" created successfully!`,
+        });
+      } catch (error: any) {
+        const status = error.response?.status || error.statusCode;
+
+        if (status === 409) {
+          setNotification({
+            isOpen: true,
+            type: "error",
+            title: "Sorry! You cannot create more rooms.",
+            message:
+              "You are only allowed to create 1 room at a time (*￣3￣)╭",
+          });
+        } else {
+          setNotification({
+            isOpen: true,
+            type: "error",
+            title: "Error when create room!",
+            message: "Something wrong when create room! Please contact support",
+          });
+        }
+      }
     }
   };
 
@@ -278,12 +327,10 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
 
   const handleLeaveRoom = async (roomId: string) => {
     if (!userToken) {
-      if (!userToken) {
-        throw new Error({
-          statusCode: 401,
-          message: "Cannot found token!",
-        });
-      }
+      throw new Error({
+        statusCode: 401,
+        message: "Cannot found token!",
+      });
     }
 
     try {

@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!genUser) {
               console.log("Error when creating user!");
             }
+            localStorage.setItem("user_id", genUser?.id);
             localStorage.setItem("auth_token", genUser?.token);
           }}
           forceOpen
