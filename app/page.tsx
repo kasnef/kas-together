@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { VideoBackground } from "@/components/video-background";
 import { MusicPlayer } from "@/components/music-player";
 import { UnifiedMenu } from "@/components/unified-menu";
-import { RoomSystem } from "@/components/room-system";
+import { RoomSystem, type Room } from "@/components/room-system";
 import { TaskManager } from "@/components/task-manager";
 import {
   Play,
@@ -32,6 +32,7 @@ export default function HomePage() {
     "music" | "rooms" | "tasks"
   >("music");
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
+  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -45,14 +46,14 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Coffee className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-pixel text-foreground">Lofi Cafe</h1>
+              <h1 className="text-3xl font-pixel text-foreground">Lofi Cafe</h1>
             </div>
 
             <nav className="flex items-center gap-4">
               <Button
                 variant={activeSection === "music" ? "default" : "ghost"}
                 onClick={() => setActiveSection("music")}
-                className="gap-2 font-pixel text-xs"
+                className="cursor-pointer gap-2 font-pixel text-lg"
               >
                 <Play className="h-4 w-4" />
                 Music
@@ -60,7 +61,7 @@ export default function HomePage() {
               <Button
                 variant={activeSection === "rooms" ? "default" : "ghost"}
                 onClick={() => setActiveSection("rooms")}
-                className="gap-2 font-pixel text-xs"
+                className="cursor-pointer gap-2 font-pixel text-lg"
               >
                 <Users className="h-4 w-4" />
                 Rooms
@@ -68,7 +69,7 @@ export default function HomePage() {
               <Button
                 variant={activeSection === "tasks" ? "default" : "ghost"}
                 onClick={() => setActiveSection("tasks")}
-                className="gap-2 font-pixel text-xs"
+                className="cursor-pointer gap-2 font-pixel text-lg"
               >
                 <CheckSquare className="h-4 w-4" />
                 Tasks
@@ -77,7 +78,12 @@ export default function HomePage() {
               <div className="flex items-center gap-2 ml-4 border-l border-border/50 pl-4">
                 <ThemeToggle />
 
-                <Button variant="ghost" size="icon" asChild>
+                <Button
+                  className="cursor-pointer"
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                >
                   <a
                     href="https://github.com/kasnef"
                     target="_blank"
@@ -87,7 +93,12 @@ export default function HomePage() {
                     <Github className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button variant="ghost" size="icon" asChild>
+                <Button
+                  className="cursor-pointer"
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                >
                   <a
                     href="https://t.me/kasnef"
                     target="_blank"
@@ -97,7 +108,12 @@ export default function HomePage() {
                     <Send className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button variant="ghost" size="icon" asChild>
+                <Button
+                  className="cursor-pointer"
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                >
                   <a
                     href="https://www.linkedin.com/in/kasnef/"
                     target="_blank"
@@ -107,12 +123,17 @@ export default function HomePage() {
                     <Linkedin className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button variant="ghost" size="icon" asChild>
+                <Button
+                  className="cursor-pointer"
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                >
                   <a
                     href="https://www.calangthang.net/en/support-me"
                     target="_blank"
                     rel="noopener noreferrer"
-                    title="LinkedIn"
+                    title="Support me"
                   >
                     <HandCoins className="h-4 w-4" />
                   </a>
@@ -124,21 +145,12 @@ export default function HomePage() {
 
         <main className="max-w-7xl mx-auto p-6">
           <div className="max-w-4xl mx-auto">
-            {activeSection === "music" && (
-              <Card className="glass-effect p-6 lofi-glow">
-                <h2 className="text-xl font-pixel mb-6 text-card-foreground">
-                  Music Player
-                </h2>
-                <div className="text-sm text-muted-foreground font-pixel mb-4">
-                  Auto-playing server tracks. Add YouTube URLs for video
-                  backgrounds.
-                </div>
-              </Card>
-            )}
-
             {activeSection === "rooms" && (
               <Card className="glass-effect p-6 lofi-glow">
-                <RoomSystem />
+                <RoomSystem
+                  currentRoom={currentRoom}
+                  setCurrentRoom={setCurrentRoom}
+                />
               </Card>
             )}
 

@@ -8,7 +8,7 @@ interface Track {
 }
 
 export async function getYtInfo(url: string): Promise<Track> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_DEV_API_URL;
   if (!baseUrl) {
     throw new Error("API URL is not defined");
   }

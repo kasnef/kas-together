@@ -3,7 +3,7 @@ import endpoint from "../endpoint";
 
 export async function generateUser(username: string) {
   const userLocalTime = Helper.getNowTz();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint.gen_user}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_DEV_API_URL}${endpoint.gen_user}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, userLocalTime }),

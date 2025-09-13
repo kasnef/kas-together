@@ -4,10 +4,13 @@ export default {
   check_me: "/api/user/check-me",
 
   // room
+  room_pagination: "/api/room/pagination",
+  room_detail: "/api/room/detail",
   create_room: "/api/room/create",
   update_room: "/api/room/update",
   delete_room: "/api/room/delete",
   join_room: "/api/room/join-room",
+  leave_room: "/api/room/leave-room",
   kick_member: "/api/room/kick-member",
 
   // music

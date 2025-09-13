@@ -32,9 +32,9 @@ export function AddSongModal({ onAddSong }: AddSongModalProps) {
           <Plus className="h-3 w-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md mx-auto rounded-xl shadow-2xl">
+      <DialogContent showCloseButton={false} className="max-w-md mx-auto rounded-xl shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-lg font-medium">
+          <DialogTitle className="text-2xl font-medium">
             Add Song by URL
           </DialogTitle>
         </DialogHeader>
