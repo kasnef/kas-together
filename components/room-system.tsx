@@ -32,6 +32,9 @@ import { useJoinRoom } from "@/hooks/room/useJoinRoom";
 import Error from "next/error";
 import LoadingScreen from "./ui/loading";
 import { useCreateRoom } from "@/hooks/room/useCreateRoom";
+import { useRoomSocket } from "@/hooks/chat/useRoomSocket";
+import { useRoomMusicStore } from "@/store/useMusicStore";
+import { useRoomMusicSync } from "@/hooks/room/useRoomSync";
 
 export type RoomType = "PUBLIC" | "PRIVATE";
 
@@ -74,22 +77,6 @@ type RoomSystemProps = {
 export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rooms, setRooms] = useState<CreateRoom[]>([]);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      user: "Alex",
-      content: "This track is perfect for coding!",
-      timestamp: new Date(),
-      type: "message",
-    },
-    {
-      id: "2",
-      user: "Sarah",
-      content: "Anyone else working on React today?",
-      timestamp: new Date(),
-      type: "message",
-    },
-  ]);
   const [notification, setNotification] = useState<{
     isOpen: boolean;
     type: "success" | "error" | "info";
@@ -120,7 +107,16 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const userToken = localStorage.getItem("auth_token");
+  const userId = localStorage.getItem("user_id");
   const userLocalTime = Helper.getNowTz();
+
+  useRoomMusicSync(currentRoom?.room_id || null, userId || null);
+
+  const { messages, sendMessage } = useRoomSocket(
+    currentRoom?.room_id || "",
+    userId || "",
+    userToken || ""
+  );
 
   // #region handle pagination
   const roomsPerPage = 10;
@@ -194,7 +190,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
           dto: newRoom,
         });
 
-        setCurrentRoom({
+        const newRoomData = {
           room_id: res.data.room.id,
           room_name: res.data.room.name,
           room_description: res.data.room.description,
@@ -203,7 +199,8 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
           room_createdAt: res.data.room.createdAt ?? "",
           room_ownerId: res.data.room.ownerId ?? "",
           memberCount: res.data.members.length,
-        });
+        };
+        setCurrentRoom(newRoomData);
 
         setRooms([...rooms, newRoom]);
         setRoomName("");
@@ -220,6 +217,23 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
             ? `Private room "${newRoom.name}" created! Room ID: ${res.data.room.id}`
             : `Public room "${newRoom.name}" created successfully!`,
         });
+
+        const checkEmittersAndSync = setInterval(() => {
+          const emitters = useRoomMusicStore.getState().emitters;
+          if (emitters) {
+            clearInterval(checkEmittersAndSync);
+            const ownerPlaylistData = JSON.parse(
+              localStorage.getItem("localMusicState") || "{}"
+            );
+
+            emitters.requestStateChange({
+              playlist: ownerPlaylistData.playlist || [],
+              currentTrackIndex: 0,
+              isPlaying: false,
+              timestamp: 0,
+            });
+          }
+        }, 100);
       } catch (error: any) {
         const status = error.response?.status || error.statusCode;
 
@@ -279,6 +293,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
       });
 
       if (res.status === 201) {
+        localStorage.setItem("current_room", JSON.stringify(room));
         setCurrentRoom(room);
         setNotification({
           isOpen: true,
@@ -339,6 +354,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
         token: userToken,
       });
       setCurrentRoom(null);
+      localStorage.removeItem("current_room");
     } catch {
       setNotification({
         isOpen: true,
@@ -414,17 +430,9 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   };
 
   const handleSendMessage = () => {
-    if (currentRoom && newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
-        user: "You",
-        content: newMessage,
-        timestamp: new Date(),
-        type: "message",
-      };
-      setMessages([...messages, message]);
-      setNewMessage("");
-    }
+    if (!newMessage.trim()) return;
+    sendMessage(newMessage, userLocalTime);
+    setNewMessage("");
   };
 
   const [memeModal, setMemeModal] = useState({
@@ -445,7 +453,6 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
         timestamp: new Date(),
         type: "meme",
       };
-      setMessages([...messages, message]);
     }
   };
 
@@ -468,7 +475,6 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
         timestamp: new Date(),
         type: "auto-meme",
       };
-      setMessages([...messages, message]);
     }
   };
 
@@ -487,14 +493,25 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
       timestamp: new Date(),
       type: "meme",
     };
-    setMessages([...messages, message]);
   };
 
-  const handleUserClick = (userName: string) => {
-    if (userName !== "You") {
-      handleSendMemeToUser(userName);
+  const handleUserClick = (user: any) => {
+    if (user.token !== userToken) {
+      handleSendMemeToUser(user.name);
     }
   };
+
+  useEffect(() => {
+    const savedRoom = localStorage.getItem("current_room");
+    if (savedRoom) {
+      try {
+        setCurrentRoom(JSON.parse(savedRoom));
+      } catch (err) {
+        console.error("Failed to parse saved room", err);
+        localStorage.removeItem("current_room");
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchRoomDetail = async () => {
@@ -579,30 +596,28 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
 
           <ScrollArea className="h-64 mb-4">
             <div className="space-y-2">
-              {messages.map((message) => (
-                <div key={message.id} className="flex gap-2">
-                  <span
-                    className={`font-medium text-primary text-lg cursor-pointer hover:underline ${
-                      message.user !== "You" ? "hover:text-secondary" : ""
-                    }`}
-                    onClick={() => handleUserClick(message.user)}
-                    title={
-                      message.user !== "You" ? "Click to send a meme!" : ""
-                    }
-                  >
-                    {message.user}:
-                  </span>
-                  <span
-                    className={`text-lg ${
-                      message.type === "meme" || message.type === "auto-meme"
-                        ? "text-2xl"
-                        : ""
-                    } ${message.type === "auto-meme" ? "text-secondary" : ""}`}
-                  >
-                    {message.content}
-                  </span>
-                </div>
-              ))}
+              {messages?.map((message) => {
+                return (
+                  <div key={message.id} className="flex gap-2">
+                    <span
+                      className={`font-medium text-primary text-lg cursor-pointer ${
+                        message.user.token !== userToken
+                          ? "hover:text-secondary hover:underline "
+                          : ""
+                      }`}
+                      onClick={() => handleUserClick(message.user)}
+                      title={
+                        message.user.token !== userToken
+                          ? "Click to send a meme!"
+                          : ""
+                      }
+                    >
+                      {message.user.name}:
+                    </span>
+                    <span className={`text-lg`}>{message.message}</span>
+                  </div>
+                );
+              })}
             </div>
           </ScrollArea>
 

@@ -18,12 +18,8 @@ export const useRoomDetailMutation = () => {
       });
       return res.data as any;
     },
-    onSuccess: (data) => {
-      console.log("Room detail fetched successfully:", data);
-    },
-    onError: (error) => {
-      console.error("Error fetching room detail:", error);
-    },
+    onSuccess: (data) => {},
+    onError: (error) => {},
   });
 
   return {

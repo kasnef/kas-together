@@ -140,6 +140,21 @@ export const ShortLovePlaylist: Song[] = [
     artist: "Haruko",
     url: "https://www.youtube.com/watch?v=ztTBuvUGEjc",
   },
+  {
+    id: "let-s-fall-in-love-lofi-music-for-stress-relief-1",
+    title: "let's fall in love ◍  lofi  ◍  music for stress relief",
+    name: "let's fall in love ◍  lofi  ◍  music for stress relief",
+    artist: "Dreamy",
+    url: "https://www.youtube.com/watch?v=6_9QpRPZqDY",
+  },
+  {
+    id: "fall-in-love-lofi-keep-you-safe-lofi-hip-hop-chillhop-relax-calm-sleep-1",
+    title:
+      "Fall In Love 🌸 Lofi Keep You Safe 🌱 Lofi Hip Hop - Chillhop [ Relax - Calm - Sleep ]",
+    name: "Fall In Love 🌸 Lofi Keep You Safe 🌱 Lofi Hip Hop - Chillhop [ Relax - Calm - Sleep ]",
+    artist: "LOFI KEEP YOU SAFE",
+    url: "https://www.youtube.com/watch?v=zhccTYy8kNY",
+  },
 ];
 
 export const ShortRelaxPlaylist: Song[] = [
