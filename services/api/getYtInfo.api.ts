@@ -2,6 +2,7 @@ import endpoint from "../endpoint";
 
 interface Track {
   id: string;
+  name: string;
   title: string;
   artist: string;
   url: string;

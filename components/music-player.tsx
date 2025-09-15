@@ -23,6 +23,7 @@ import { AddSongModal } from "./add-song-modal";
 import { PlaylistModal } from "./playlist-modal";
 import endpoint from "@/services/endpoint";
 import { getYtInfo } from "@/services/api/getYtInfo.api";
+import { useRoomMusicStore } from "@/store/useMusicStore";
 
 interface Track {
   id: string;
@@ -50,7 +51,105 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [hasUserTracks, setHasUserTracks] = useState(false);
 
+  const {
+    syncedPlaylist,
+    syncedCurrentIndex,
+    syncedIsPlaying,
+    syncedTimestamp,
+    isOwner,
+    isInRoom,
+    emitters,
+  } = useRoomMusicStore();
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (isInRoom && !isOwner) {
+      if (JSON.stringify(playlist) !== JSON.stringify(syncedPlaylist)) {
+        console.log("MEMBER: Syncing playlist from server.");
+        setPlaylist(syncedPlaylist);
+      }
+
+      const serverTrack = syncedPlaylist[syncedCurrentIndex] || null;
+      if (currentTrack?.id !== serverTrack?.id) {
+        console.log("MEMBER: Syncing current track to:", serverTrack?.title);
+        setCurrentTrack(serverTrack);
+      }
+
+      if (isPlaying !== syncedIsPlaying) {
+        console.log("MEMBER: Syncing isPlaying state to:", syncedIsPlaying);
+        setIsPlaying(syncedIsPlaying);
+      }
+
+      // 4. Ghi đè trực tiếp timestamp lên audio element
+      const audio = audioRef.current;
+      if (audio) {
+        const timeDiff = Math.abs(audio.currentTime - syncedTimestamp);
+        if (timeDiff > 2.5) {
+          console.log(`MEMBER: Resyncing time to ${syncedTimestamp}`);
+          audio.currentTime = syncedTimestamp;
+        }
+      }
+    }
+  }, [
+    isInRoom,
+    isOwner,
+    syncedPlaylist,
+    syncedCurrentIndex,
+    syncedIsPlaying,
+    syncedTimestamp,
+  ]);
+
+  // --- STATE CỤC BỘ: Chỉ dùng khi KHÔNG ở trong phòng ---
+  const [localPlaylist, setLocalPlaylist] = useState<Song[]>(
+    () => getRandomPlaylist().playlist
+  );
+  const [localIsPlaying, setLocalIsPlaying] = useState(false);
+  const [localCurrentIndex, setLocalCurrentIndex] = useState(0);
+
+  const playlistToUse = isInRoom ? syncedPlaylist : localPlaylist;
+  const isPlayingToUse = isInRoom ? syncedIsPlaying : localIsPlaying;
+  const currentIndexToUse = isInRoom ? syncedCurrentIndex : localCurrentIndex;
+  const audiocurrentTrack = playlistToUse[currentIndexToUse] || null;
+
+  // control audio
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (currentTrack && (!audio.src || !audio.src.includes(currentTrack.url))) {
+      audio.src = `${process.env.NEXT_PUBLIC_DEV_API_URL}${endpoint.stream_music}?url=${currentTrack.url}`;
+      audio.load();
+    }
+    if (!currentTrack && audio.src) {
+      audio.src = "";
+    }
+
+    if (isPlayingToUse && audio.paused) {
+      audio.play().catch((e) => {});
+    } else if (!isPlayingToUse && !audio.paused) {
+      audio.pause();
+    }
+
+    if (isInRoom && !isOwner) {
+      const timeDiff = Math.abs(audio.currentTime - syncedTimestamp);
+      if (timeDiff > 2.5) {
+        audio.currentTime = syncedTimestamp;
+      }
+    }
+  }, [currentTrack, isPlayingToUse, isInRoom, isOwner, syncedTimestamp]);
+
+  // report local status for room system
+  useEffect(() => {
+    if (!isInRoom) {
+      localStorage.setItem(
+        "localMusicState",
+        JSON.stringify({
+          playlist: localPlaylist,
+          currentIndex: localCurrentIndex,
+        })
+      );
+    }
+  }, [localPlaylist, localCurrentIndex, isInRoom]);
 
   // play music when clicked anywhere
   useEffect(() => {
@@ -91,21 +190,14 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
   }, [currentTrack]);
 
   const handlePlayPause = () => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
+    if (isInRoom) {
+      if (!isOwner || !emitters || !audioRef.current) return;
+      emitters.requestStateChange({
+        isPlaying: !syncedIsPlaying,
+        timestamp: audioRef.current.currentTime,
+      });
     } else {
-      audioRef.current.muted = false;
-      audioRef.current
-        .play()
-        .then(() => {
-          setIsPlaying(true);
-        })
-        .catch((err) => {
-          setIsPlaying(false);
-        });
+      setLocalIsPlaying(!localIsPlaying);
     }
   };
 
@@ -198,23 +290,19 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
   };
 
   const handleNextTrack = () => {
-    if (playlist.length === 0) return;
-
-    let nextIndex;
-    if (isShuffled) {
-      nextIndex = Math.floor(Math.random() * playlist.length);
+    if (isInRoom) {
+      if (!isOwner || !emitters || playlistToUse.length === 0) return;
+      const nextIndex = (currentIndexToUse + 1) % playlistToUse.length;
+      emitters.requestStateChange({
+        currentTrackIndex: nextIndex,
+        isPlaying: true,
+        timestamp: 0,
+      });
     } else {
-      nextIndex = currentIndex + 1;
+      if (localPlaylist.length === 0) return;
+      setLocalCurrentIndex((prev) => (prev + 1) % localPlaylist.length);
+      setLocalIsPlaying(true);
     }
-
-    if (nextIndex >= playlist.length) {
-      // hết playlist
-      setIsPlaying(false);
-      return;
-    }
-
-    setCurrentIndex(nextIndex);
-    setCurrentTrack(playlist[nextIndex]);
   };
 
   const handlePreviousTrack = () => {
