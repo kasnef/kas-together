@@ -37,7 +37,10 @@ import { useRoomSocket } from "@/hooks/chat/useRoomSocket";
 import { useRoomMusicStore } from "@/store/useMusicStore";
 import { useRoomMusicSync } from "@/hooks/room/useRoomSync";
 import { useAddCurrentRoom } from "@/hooks/room/useAddCurrentRoom";
-import { useRoomEvents, type NotificationType } from "@/hooks/room/useRoomEvent";
+import {
+  useRoomEvents,
+  type NotificationType,
+} from "@/hooks/room/useRoomEvent";
 
 export type RoomType = "PUBLIC" | "PRIVATE";
 
@@ -245,6 +248,8 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
           room_ownerId: currentRoomWithOwnerId.room.owner?.id ?? "",
           memberCount: res.data.members.length,
         };
+
+        console.log('formattedRoom===> ', formattedRoom)
 
         setCurrentRoom(formattedRoom);
         localStorage.setItem("current_room", JSON.stringify(formattedRoom));

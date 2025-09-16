@@ -14,6 +14,7 @@ import {
   ShortLovePlaylist,
   ShortRelaxPlaylist,
   SleepPlaylist,
+  VietnameseAcoustic,
   WorkingPlaylist,
   type Song,
 } from "@/data/music-playlist";
@@ -22,6 +23,7 @@ import {
   Brain,
   Coffee,
   Droplet,
+  Guitar,
   Heart,
   ListPlus,
   Moon,
@@ -65,6 +67,12 @@ const PLAYLIST_THEMES = [
     icon: <Moon className="h-5 w-5" />,
     data: SleepPlaylist,
     videoPlayList: "Sleep",
+  },
+  {
+    name: "Vietnamese Acoustic",
+    icon: <Guitar className="h-5 w-5" />,
+    data: VietnameseAcoustic,
+    videoPlayList: "Relax",
   },
 ];
 

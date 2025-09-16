@@ -17,7 +17,13 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { useGenericStore } from "@/store/useStore";
 import { AddSongModal } from "./add-song-modal";
 import { PlaylistModal } from "./playlist-modal";
@@ -25,575 +31,724 @@ import endpoint from "@/services/endpoint";
 import { getYtInfo } from "@/services/api/getYtInfo.api";
 import { useRoomMusicStore } from "@/store/useMusicStore";
 
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  url: string;
-}
-
 interface MusicPlayerProps {
-  onTrackChange?: (track: Track | null) => void;
+  onTrackChange?: (track: Song | null) => void;
+  autoStartForFirstTime?: boolean;
 }
 
-export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
-  const [initialPlaylist] = useState(() => getRandomPlaylist());
-  const setSimpleItem = useGenericStore((state) => state.setSimpleItem);
+export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
+  ({ onTrackChange, autoStartForFirstTime }, ref) => {
+    const [initialPlaylist] = useState(() => getRandomPlaylist());
+    const setSimpleItem = useGenericStore((state) => state.setSimpleItem);
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
-  const [volume, setVolume] = useState([75]);
-  const [isMuted, setIsMuted] = useState(false);
-  const [playlist, setPlaylist] = useState<Track[]>(initialPlaylist.playlist);
-  const [isShuffled, setIsShuffled] = useState(false);
-  const [isRepeating, setIsRepeating] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showPlaylist, setShowPlaylist] = useState(false);
-  const [hasUserTracks, setHasUserTracks] = useState(false);
+    const [volume, setVolume] = useState([75]);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isShuffled, setIsShuffled] = useState(false);
+    const [isRepeating, setIsRepeating] = useState(false);
+    const [showPlaylist, setShowPlaylist] = useState(false);
+    const [hasUserTracks, setHasUserTracks] = useState(false);
 
-  const {
-    syncedPlaylist,
-    syncedCurrentIndex,
-    syncedIsPlaying,
-    syncedTimestamp,
-    isOwner,
-    isInRoom,
-    emitters,
-  } = useRoomMusicStore();
-  const audioRef = useRef<HTMLAudioElement>(null);
+    const {
+      syncedPlaylist,
+      syncedCurrentIndex,
+      syncedIsPlaying,
+      syncedTimestamp,
+      isOwner,
+      isInRoom,
+      emitters,
+    } = useRoomMusicStore();
 
-  useEffect(() => {
-    if (isInRoom && !isOwner) {
-      if (JSON.stringify(playlist) !== JSON.stringify(syncedPlaylist)) {
-        console.log("MEMBER: Syncing playlist from server.");
-        setPlaylist(syncedPlaylist);
+    const [localPlaylist, setLocalPlaylist] = useState<Song[]>(
+      () => getRandomPlaylist().playlist
+    );
+    const [localIsPlaying, setLocalIsPlaying] = useState(false);
+    const [localCurrentIndex, setLocalCurrentIndex] = useState<number>(() => {
+      const len = initialPlaylist?.playlist?.length || 0;
+      if (len > 0) {
+        const randomIndex = Math.floor(Math.random() * len);
+        console.log(`Random song index: ${randomIndex}/${len - 1}`); // Debug log
+        return randomIndex;
       }
+      return 0;
+    });
 
-      const serverTrack = syncedPlaylist[syncedCurrentIndex] || null;
-      if (currentTrack?.id !== serverTrack?.id) {
-        console.log("MEMBER: Syncing current track to:", serverTrack?.title);
-        setCurrentTrack(serverTrack);
+    const playlist = isInRoom ? syncedPlaylist : localPlaylist;
+    const isPlaying = isInRoom ? syncedIsPlaying : localIsPlaying;
+    const currentIndex = isInRoom ? syncedCurrentIndex : localCurrentIndex;
+    const currentTrack = playlist[currentIndex] || null;
+
+    const audioRef = useRef<HTMLAudioElement>(null);
+
+    useImperativeHandle(ref, () => ({
+      startPlayback: () => {
+        if (!hasUserTracks && initialPlaylist.playlist.length > 0) {
+          setLocalPlaylist(initialPlaylist.playlist);
+          setLocalCurrentIndex(0);
+          setHasUserTracks(true);
+
+          setLocalIsPlaying(true);
+
+          // Wait for state to update and audio to be ready
+          setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.muted = false;
+              audioRef.current.play().catch((e) => {
+                console.error("First-time autoplay failed:", e);
+              });
+            }
+          }, 100);
+        } else if (hasUserTracks && !localIsPlaying) {
+          setLocalIsPlaying(true);
+        }
+      },
+    }));
+
+    useEffect(() => {
+      if (
+        autoStartForFirstTime &&
+        !hasUserTracks &&
+        initialPlaylist.playlist.length > 0
+      ) {
+        // Prepare the playlist but don't start playing until user clicks
+        setLocalPlaylist(initialPlaylist.playlist);
+        setLocalCurrentIndex(0);
       }
+    }, [autoStartForFirstTime, hasUserTracks, initialPlaylist.playlist]);
 
-      if (isPlaying !== syncedIsPlaying) {
-        console.log("MEMBER: Syncing isPlaying state to:", syncedIsPlaying);
-        setIsPlaying(syncedIsPlaying);
-      }
+    useEffect(() => {
+      if (isInRoom && !isOwner && audioRef.current) {
+        const audio = audioRef.current;
 
-      // 4. Ghi đè trực tiếp timestamp lên audio element
-      const audio = audioRef.current;
-      if (audio) {
+        // Sync playlist if different
+        if (JSON.stringify(localPlaylist) !== JSON.stringify(syncedPlaylist)) {
+          setLocalPlaylist(syncedPlaylist);
+        }
+
         const timeDiff = Math.abs(audio.currentTime - syncedTimestamp);
-        if (timeDiff > 2.5) {
-          console.log(`MEMBER: Resyncing time to ${syncedTimestamp}`);
+        if (timeDiff > 1.0) {
           audio.currentTime = syncedTimestamp;
         }
       }
-    }
-  }, [
-    isInRoom,
-    isOwner,
-    syncedPlaylist,
-    syncedCurrentIndex,
-    syncedIsPlaying,
-    syncedTimestamp,
-  ]);
+    }, [
+      isInRoom,
+      isOwner,
+      syncedPlaylist,
+      syncedCurrentIndex,
+      syncedIsPlaying,
+      syncedTimestamp,
+    ]);
 
-  // --- STATE CỤC BỘ: Chỉ dùng khi KHÔNG ở trong phòng ---
-  const [localPlaylist, setLocalPlaylist] = useState<Song[]>(
-    () => getRandomPlaylist().playlist
-  );
-  const [localIsPlaying, setLocalIsPlaying] = useState(false);
-  const [localCurrentIndex, setLocalCurrentIndex] = useState(0);
+    useEffect(() => {
+      const audio = audioRef.current;
+      if (!audio) return;
 
-  const playlistToUse = isInRoom ? syncedPlaylist : localPlaylist;
-  const isPlayingToUse = isInRoom ? syncedIsPlaying : localIsPlaying;
-  const currentIndexToUse = isInRoom ? syncedCurrentIndex : localCurrentIndex;
-  const audiocurrentTrack = playlistToUse[currentIndexToUse] || null;
-
-  // control audio
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (currentTrack && (!audio.src || !audio.src.includes(currentTrack.url))) {
-      audio.src = `${process.env.NEXT_PUBLIC_DEV_API_URL}${endpoint.stream_music}?url=${currentTrack.url}`;
-      audio.load();
-    }
-    if (!currentTrack && audio.src) {
-      audio.src = "";
-    }
-
-    if (isPlayingToUse && audio.paused) {
-      audio.play().catch((e) => {});
-    } else if (!isPlayingToUse && !audio.paused) {
-      audio.pause();
-    }
-
-    if (isInRoom && !isOwner) {
-      const timeDiff = Math.abs(audio.currentTime - syncedTimestamp);
-      if (timeDiff > 2.5) {
-        audio.currentTime = syncedTimestamp;
+      if (!process.env.NEXT_PUBLIC_DEV_API_URL) {
+        console.warn(
+          "Music streaming disabled: NEXT_PUBLIC_DEV_API_URL not configured"
+        );
+        return;
       }
-    }
-  }, [currentTrack, isPlayingToUse, isInRoom, isOwner, syncedTimestamp]);
 
-  // report local status for room system
-  useEffect(() => {
-    if (!isInRoom) {
-      localStorage.setItem(
-        "localMusicState",
-        JSON.stringify({
-          playlist: localPlaylist,
-          currentIndex: localCurrentIndex,
-        })
-      );
-    }
-  }, [localPlaylist, localCurrentIndex, isInRoom]);
+      // Set audio source if track changed
+      if (
+        currentTrack &&
+        (!audio.src || !audio.src.includes(currentTrack.url))
+      ) {
+        const newSrc = `${process.env.NEXT_PUBLIC_DEV_API_URL}${endpoint.stream_music}?url=${currentTrack?.url}`;
 
-  // play music when clicked anywhere
-  useEffect(() => {
-    const enableAudio = () => {
-      if (audioRef.current && currentTrack) {
-        audioRef.current.muted = false;
-        audioRef.current.play().catch((err) => {});
+        audio.src = newSrc;
+        audio.preload = "metadata";
+        audio.crossOrigin = "anonymous";
+        audio.load();
       }
-      document.removeEventListener("click", enableAudio);
-    };
 
-    document.addEventListener("click", enableAudio);
-
-    return () => {
-      document.removeEventListener("click", enableAudio);
-    };
-  }, [currentTrack]);
-
-  useEffect(() => {
-    if (initialPlaylist.playlist.length > 0 && !hasUserTracks) {
-      setCurrentTrack(initialPlaylist.playlist[0]);
-      setCurrentIndex(0);
-      setSimpleItem({ name: initialPlaylist.videoPlaylistKey });
-    }
-  }, [initialPlaylist.playlist]);
-
-  useEffect(() => {
-    onTrackChange?.(currentTrack);
-  }, [currentTrack, onTrackChange]);
-
-  useEffect(() => {
-    if (currentTrack && audioRef.current) {
-      audioRef.current.load();
-      if (isPlaying) {
-        audioRef.current.play();
+      // Clear audio if no track
+      if (!currentTrack && audio.src) {
+        audio.src = "";
       }
-    }
-  }, [currentTrack]);
 
-  const handlePlayPause = () => {
-    if (isInRoom) {
-      if (!isOwner || !emitters || !audioRef.current) return;
-      emitters.requestStateChange({
-        isPlaying: !syncedIsPlaying,
-        timestamp: audioRef.current.currentTime,
-      });
-    } else {
-      setLocalIsPlaying(!localIsPlaying);
-    }
-  };
-
-  const handleVolumeChange = (value: number[]) => {
-    setVolume(value);
-    if (audioRef.current) {
-      audioRef.current.volume = value[0] / 100; // từ 0.0 → 1.0
-      if (value[0] > 0) {
-        audioRef.current.muted = false; // tự bỏ mute nếu có volume
-        setIsMuted(false);
+      if (!process.env.NEXT_PUBLIC_DEV_API_URL) {
+        return;
       }
-    }
-  };
 
-  const handleMute = () => {
-    setIsMuted(!isMuted);
-    if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-    }
-  };
-
-  const handleAddTrack = async (url: string) => {
-    const cleanUrl = url.replace(/&.*$/, "");
-    if (!cleanUrl.trim()) return;
-
-    try {
-      const info: Track = await getYtInfo(url);
-
-      const newTrack: Track = {
-        id: info?.id,
-        title: info.title,
-        artist: info.artist,
-        url: url,
-      };
-
-      if (hasUserTracks) {
-        setPlaylist((prevPlaylist) => [...prevPlaylist, newTrack]);
-      } else {
-        setPlaylist([newTrack]);
-        setHasUserTracks(true);
-        setCurrentTrack(newTrack);
-        setCurrentIndex(0);
-        setIsPlaying(true);
-
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.muted = false;
-            audioRef.current
-              .play()
-              .catch((e) => console.error("Autoplay fail on first track", e));
-          }
-        }, 200);
+      // Handle play/pause state
+      if (isPlaying && audio.paused) {
+        audio.play().catch((e) => {
+          console.error("Audio play failed:", e);
+          console.error("Error details:", {
+            name: e.name,
+            message: e.message,
+            mode: isInRoom ? "ROOM" : "SOLO",
+            trackTitle: currentTrack?.title,
+            audioSrc: audio.src,
+          });
+          // Simple skip to next track on any error
+          setTimeout(() => {
+            handleNextTrack();
+          }, 1000);
+        });
+      } else if (!isPlaying && !audio.paused) {
+        audio.pause();
       }
-    } catch (error) {
-      console.error("Error fetching track info:", error);
-    } finally {
-    }
-  };
 
-  const handleDeleteTrack = (trackId: string) => {
-    const newPlaylist = playlist.filter((track) => track.id !== trackId);
-    setPlaylist(newPlaylist);
-
-    if (currentTrack?.id === trackId) {
-      if (newPlaylist.length > 0) {
-        const newIndex = Math.min(currentIndex, newPlaylist.length - 1);
-        setCurrentTrack(newPlaylist[newIndex]);
-        setCurrentIndex(newIndex);
-      } else {
-        if (hasUserTracks) {
-          setHasUserTracks(false);
-          setPlaylist(initialPlaylist.playlist);
-          setCurrentTrack(initialPlaylist.playlist[0]);
-          setCurrentIndex(0);
-        } else {
-          setCurrentTrack(null);
-          setCurrentIndex(0);
-          setIsPlaying(false);
+      if (isInRoom && !isOwner && currentTrack) {
+        const timeDiff = Math.abs(audio.currentTime - syncedTimestamp);
+        if (timeDiff > 1.0) {
+          audio.currentTime = syncedTimestamp;
         }
       }
-    }
-  };
+    }, [currentTrack, isPlaying, isInRoom, isOwner, syncedTimestamp]);
 
-  const handleClearPlaylist = () => {
-    setPlaylist(initialPlaylist.playlist);
-    setCurrentTrack(initialPlaylist.playlist[0]);
-    setCurrentIndex(0);
-    setHasUserTracks(false);
-    setIsPlaying(false);
-  };
+    useEffect(() => {
+      if (!isInRoom) {
+        localStorage.setItem(
+          "localMusicState",
+          JSON.stringify({
+            playlist: localPlaylist,
+            currentIndex: localCurrentIndex,
+            isPlaying: localIsPlaying,
+          })
+        );
+      }
+    }, [localPlaylist, localCurrentIndex, localIsPlaying, isInRoom]);
 
-  const handleNextTrack = () => {
-    if (isInRoom) {
-      if (!isOwner || !emitters || playlist.length === 0) return;
-      const nextIndex = (currentIndex + 1) % playlist.length;
-      emitters.requestStateChange({
-        currentTrackIndex: nextIndex,
-        isPlaying: true,
-        timestamp: 0,
-      });
-    } else {
+    useEffect(() => {
+      if (initialPlaylist.playlist.length > 0 && !hasUserTracks) {
+        if (!isInRoom) {
+          if (
+            localCurrentIndex === undefined ||
+            localCurrentIndex >= initialPlaylist.playlist.length
+          ) {
+            const randomIndex = Math.floor(
+              Math.random() * initialPlaylist.playlist.length
+            );
+            setLocalCurrentIndex(randomIndex);
+          }
+          setSimpleItem({ name: initialPlaylist.videoPlaylistKey });
+        }
+      }
+    }, [initialPlaylist.playlist, isInRoom]);
+
+    useEffect(() => {
+      onTrackChange?.(currentTrack);
+    }, [currentTrack, onTrackChange]);
+
+    const handlePlayPause = () => {
+      if (isInRoom) {
+        if (!isOwner || !emitters || !audioRef.current) {
+          return;
+        }
+        emitters.requestStateChange({
+          isPlaying: !syncedIsPlaying,
+          timestamp: audioRef.current.currentTime,
+        });
+      } else {
+        setLocalIsPlaying(!localIsPlaying);
+      }
+    };
+
+    const handleMute = () => {
+      setIsMuted(!isMuted);
+      if (audioRef.current) {
+        audioRef.current.muted = !isMuted;
+      }
+    };
+
+    const handleVolumeChange = (newVolume: number[]) => {
+      setVolume(newVolume);
+      if (audioRef.current) {
+        audioRef.current.volume = newVolume[0] / 100;
+      }
+    };
+
+    const handleNextTrack = () => {
+      if (isInRoom) {
+        if (!isOwner || !emitters || playlist.length === 0) {
+          return;
+        }
+
+        let nextIndex = (syncedCurrentIndex + 1) % playlist.length;
+        if (isShuffled && playlist.length > 1) {
+          do {
+            nextIndex = Math.floor(Math.random() * playlist.length);
+          } while (nextIndex === syncedCurrentIndex);
+        }
+
+        emitters.requestStateChange({
+          currentTrackIndex: nextIndex,
+          isPlaying: true,
+          timestamp: 0,
+        });
+      } else {
+        if (playlist.length === 0) return;
+
+        let nextIndex = (localCurrentIndex + 1) % playlist.length;
+        if (isShuffled && playlist.length > 1) {
+          do {
+            nextIndex = Math.floor(Math.random() * playlist.length);
+          } while (nextIndex === localCurrentIndex);
+        }
+
+        setLocalCurrentIndex(nextIndex);
+        setLocalIsPlaying(true);
+      }
+    };
+
+    const handlePreviousTrack = () => {
       if (playlist.length === 0) return;
 
-      let nextIndex = (currentIndex + 1) % playlist.length;
-      if (isShuffled) {
-        // Tạo một index ngẫu nhiên khác với index hiện tại (nếu có thể)
-        if (playlist.length > 1) {
-          let newIndex;
+      if (isInRoom) {
+        if (!isOwner || !emitters) return;
+
+        let prevIndex =
+          syncedCurrentIndex === 0
+            ? playlist.length - 1
+            : syncedCurrentIndex - 1;
+        if (isShuffled && playlist.length > 1) {
           do {
-            newIndex = Math.floor(Math.random() * playlist.length);
-          } while (newIndex === currentIndex);
-          nextIndex = newIndex;
-        } else {
-          nextIndex = 0;
+            prevIndex = Math.floor(Math.random() * playlist.length);
+          } while (prevIndex === syncedCurrentIndex);
         }
+
+        emitters.requestStateChange({
+          currentTrackIndex: prevIndex,
+          isPlaying: true,
+          timestamp: 0,
+        });
+      } else {
+        let prevIndex =
+          localCurrentIndex === 0 ? playlist.length - 1 : localCurrentIndex - 1;
+        if (isShuffled && playlist.length > 1) {
+          prevIndex = Math.floor(Math.random() * playlist.length);
+        }
+
+        setLocalCurrentIndex(prevIndex);
       }
+    };
 
-      // Cập nhật tất cả các state local cần thiết
-      setCurrentIndex(nextIndex);
-      setCurrentTrack(playlist[nextIndex]);
-      setIsPlaying(true);
-    }
-  };
-
-  const handlePreviousTrack = () => {
-    if (playlist.length === 0) return;
-
-    let prevIndex;
-    if (isShuffled) {
-      prevIndex = Math.floor(Math.random() * playlist.length);
-    } else {
-      prevIndex = currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
-    }
-
-    setCurrentIndex(prevIndex);
-    setCurrentTrack(playlist[prevIndex]);
-  };
-
-  const handleTrackEnd = () => {
-    if (isRepeating) {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play();
-      }
-    } else {
-      handleNextTrack();
-    }
-  };
-
-  const handlePlaylistSelect = (newPlaylist: Song[]) => {
-    if (newPlaylist && newPlaylist.length > 0) {
-      setPlaylist(newPlaylist);
-      setCurrentTrack(newPlaylist[0]);
-      setCurrentIndex(0);
-      setHasUserTracks(true);
-
-      console.log("newPlaylist ==> ", newPlaylist);
-
-      setTimeout(() => {
-        setIsPlaying(true);
+    const handleTrackEnd = () => {
+      if (isRepeating) {
         if (audioRef.current) {
+          audioRef.current.currentTime = 0;
           audioRef.current
             .play()
-            .catch((e) => console.error("Autoplay failed", e));
+            .catch((e) => console.error("Repeat play failed:", e));
         }
-      }, 500);
-    }
-  };
+      } else {
+        handleNextTrack();
+      }
+    };
 
-  return (
-    <>
-      {/* Audio Element */}
-      {currentTrack && (
-        <audio
-          autoPlay
-          ref={audioRef}
-          src={`${process.env.NEXT_PUBLIC_DEV_API_URL}${endpoint.stream_music}?url=${currentTrack?.url}`}
-          onEnded={handleTrackEnd}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onLoadedMetadata={() => {
-            if (audioRef.current) {
-              audioRef.current.volume = volume[0] / 100;
+    const handleAddTrack = async (url: string) => {
+      const cleanUrl = url.replace(/&.*$/, "");
+      if (!cleanUrl.trim()) return;
+
+      try {
+        const info: Song = await getYtInfo(url);
+        const newTrack: Song = {
+          id: info?.id,
+          title: info.title,
+          name: info.title,
+          artist: info.artist,
+          url: url,
+        };
+
+        if (isInRoom) {
+          if (!emitters) return;
+
+          emitters.requestAddTrack(newTrack, !hasUserTracks);
+          setHasUserTracks(true);
+        } else {
+          if (hasUserTracks) {
+            setLocalPlaylist((prev) => [...prev, newTrack]);
+          } else {
+            setLocalPlaylist([newTrack]);
+            setHasUserTracks(true);
+            setLocalCurrentIndex(0);
+            setLocalIsPlaying(true);
+
+            setTimeout(() => {
+              if (audioRef.current) {
+                audioRef.current.muted = false;
+                audioRef.current
+                  .play()
+                  .catch((e) => console.error("Autoplay failed:", e));
+              }
+            }, 200);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching track info:", error);
+      }
+    };
+
+    const handleDeleteTrack = (trackId: string) => {
+      if (isInRoom && !isOwner) return; // Only owner can delete in room
+
+      const newPlaylist = playlist.filter((track) => track.id !== trackId);
+
+      if (isInRoom && emitters) {
+        return;
+      } else {
+        setLocalPlaylist(newPlaylist);
+
+        if (currentTrack?.id === trackId) {
+          if (newPlaylist.length > 0) {
+            const newIndex = Math.min(
+              localCurrentIndex,
+              newPlaylist.length - 1
+            );
+            setLocalCurrentIndex(newIndex);
+          } else {
+            if (hasUserTracks) {
+              setHasUserTracks(false);
+              setLocalPlaylist(initialPlaylist.playlist);
+              setLocalCurrentIndex(0);
+            } else {
+              setLocalCurrentIndex(0);
+              setLocalIsPlaying(false);
             }
-          }}
-        />
-      )}
+          }
+        }
+      }
+    };
 
-      <div className="fixed bottom-0 left-0 right-0 p-1 z-50">
+    const handleClearPlaylist = () => {
+      if (isInRoom && !isOwner) return;
+
+      if (isInRoom && emitters) {
+        return;
+      } else {
+        setLocalPlaylist(initialPlaylist.playlist);
+        setLocalCurrentIndex(0);
+        setHasUserTracks(false);
+        setLocalIsPlaying(false);
+      }
+    };
+
+    const handlePlaylistSelect = (newPlaylist: Song[]) => {
+      if (newPlaylist && newPlaylist.length > 0) {
+        if (isInRoom && emitters) {
+          emitters.requestStateChange({
+            playlist: newPlaylist,
+            currentTrackIndex: 0,
+            isPlaying: false,
+            timestamp: 0,
+          });
+          setHasUserTracks(true);
+        } else {
+          const len = initialPlaylist?.playlist?.length || 0;
+          const random_song = len > 0 ? Math.floor(Math.random() * len) : 0;
+          setLocalPlaylist(newPlaylist);
+          setLocalCurrentIndex(random_song);
+          setHasUserTracks(true);
+
+          setTimeout(() => {
+            setLocalIsPlaying(true);
+            if (audioRef.current) {
+              audioRef.current
+                .play()
+                .catch((e) => console.error("Autoplay failed:", e));
+            }
+          }, 500);
+        }
+      }
+    };
+
+    return (
+      <>
+        {currentTrack && process.env.NEXT_PUBLIC_DEV_API_URL && (
+          <audio
+            ref={audioRef}
+            src={`${process.env.NEXT_PUBLIC_DEV_API_URL}${endpoint.stream_music}?url=${currentTrack?.url}`}
+            preload="metadata"
+            crossOrigin="anonymous"
+            onEnded={handleTrackEnd}
+            onPlay={() => {
+              if (!isInRoom) setLocalIsPlaying(true);
+            }}
+            onPause={() => {
+              if (!isInRoom) setLocalIsPlaying(false);
+            }}
+            onLoadedMetadata={() => {
+              if (audioRef.current) {
+                audioRef.current.volume = volume[0] / 100;
+              }
+            }}
+            onError={(e) => {
+              const target = e.target as HTMLAudioElement;
+              const error = target.error;
+              if (error) {
+                console.error("Audio error:", {
+                  code: error.code,
+                  message: error.message,
+                  track: currentTrack?.title,
+                  mode: isInRoom ? "ROOM" : "SOLO",
+                  audioSrc: target.src,
+                  networkState: target.networkState,
+                  readyState: target.readyState,
+                });
+                setTimeout(() => {
+                  handleNextTrack();
+                }, 1000);
+              }
+            }}
+          />
+        )}
+
+        {!process.env.NEXT_PUBLIC_DEV_API_URL && (
+          <div className="fixed top-4 right-4 bg-amber-100 dark:bg-amber-900 border border-amber-300 dark:border-amber-700 rounded-lg p-4 max-w-sm z-50">
+            <div className="flex items-start gap-2">
+              <Music className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-1">
+                  Music Streaming Disabled
+                </h4>
+                <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">
+                  Configure NEXT_PUBLIC_DEV_API_URL in Project Settings to
+                  enable audio playback.
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Click the gear icon (⚙️) → Environment Variables
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div
-          className="absolute inset-0 -z-10
+          className="fixed bottom-0 left-0 right-0 p-1 z-50"
+          data-music-player="true"
+        >
+          <div
+            className="absolute inset-0 -z-10
                   bg-gradient-to-r from-amber-50 to-orange-50
                   dark:from-amber-950 dark:to-orange-950
                   opacity-100 backdrop-blur-sm
                   border-t border-amber-200/50 dark:border-amber-800/50"
-        ></div>
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
-          <div
-            className="min-w-0 max-w-[220px] cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-900/50 rounded-lg p-2 transition-colors"
-            onClick={() => setShowPlaylist(!showPlaylist)}
-          >
-            {currentTrack ? (
-              <div className="flex items-center gap-2">
-                <Music className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                <span className="text-sm text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900 px-2 py-1 rounded-full">
-                  {playlist.length}
-                </span>
-                <div className="truncate flex-1">
-                  <p className="text-lg font-medium truncate text-amber-900 dark:text-amber-100">
-                    {currentTrack.title}
-                  </p>
-                  <p className="text-sm text-amber-700 dark:text-amber-300 truncate">
-                    {currentTrack.artist}
-                  </p>
-                </div>
-                <ChevronUp
-                  className={`h-4 w-4 text-amber-600 dark:text-amber-400 transition-transform ${
-                    showPlaylist ? "rotate-180" : ""
-                  }`}
-                />
-              </div>
-            ) : (
-              <p className="text-lg text-amber-600 dark:text-amber-400">
-                No track selected
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsShuffled(!isShuffled)}
-              className={`h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 ${
-                isShuffled
-                  ? "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900"
-                  : "text-amber-700 dark:text-amber-300"
-              }`}
+          ></div>
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
+            <div
+              className="min-w-0 max-w-[220px] cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-900/50 rounded-lg p-2 transition-colors"
+              onClick={() => setShowPlaylist(!showPlaylist)}
             >
-              <Shuffle className="h-3 w-3" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handlePreviousTrack}
-              className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300"
-            >
-              <SkipBack className="h-3 w-3" />
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={handlePlayPause}
-              disabled={!currentTrack}
-              className="h-8 w-8 p-0 bg-amber-500 hover:bg-amber-600 text-white"
-            >
-              {isPlaying ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleNextTrack}
-              className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300"
-            >
-              <SkipForward className="h-3 w-3" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsRepeating(!isRepeating)}
-              className={`h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 ${
-                isRepeating
-                  ? "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900"
-                  : "text-amber-700 dark:text-amber-300"
-              }`}
-            >
-              <Repeat className="h-3 w-3" />
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2 min-w-[120px]">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleMute}
-              className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300"
-            >
-              {isMuted || volume[0] === 0 ? (
-                <VolumeX className="h-3 w-3" />
-              ) : (
-                <Volume2 className="h-3 w-3" />
-              )}
-            </Button>
-            <Slider
-              value={volume}
-              max={100}
-              step={1}
-              className="flex-1"
-              onValueChange={handleVolumeChange}
-            />
-          </div>
-
-          {/* add song modal */}
-          <div className="flex items-center gap-2">
-            <AddSongModal onAddSong={handleAddTrack} />
-          </div>
-
-          <PlaylistModal onPlaylistSelect={handlePlaylistSelect} />
-        </div>
-      </div>
-
-      {showPlaylist && (
-        <div className="fixed bottom-16 left-4 right-4 max-w-md mx-auto max-h-80 bg-gradient-to-br from-amber-50/98 to-orange-50/98 dark:from-amber-950/98 dark:to-orange-950/98 backdrop-blur-md border border-amber-200/50 dark:border-amber-800/50 rounded-xl p-4 z-40 overflow-y-auto shadow-2xl">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-lg font-medium text-amber-900 dark:text-amber-100">
-              Playlist ({playlist.length})
-            </h4>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearPlaylist}
-                className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                title="Clear All"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPlaylist(false)}
-                className="h-6 w-6 p-0 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {playlist.map((track, index) => (
-              <div
-                key={track.id}
-                className={`flex items-center justify-between p-3 rounded-lg text-sm cursor-pointer transition-all hover:bg-amber-100/70 dark:hover:bg-amber-900/70 ${
-                  currentTrack?.id === track.id
-                    ? "bg-amber-200/70 dark:bg-amber-800/70 ring-1 ring-amber-400/50"
-                    : "bg-white/30 dark:bg-black/20"
-                }`}
-                onClick={() => {
-                  setCurrentTrack(track);
-                  setCurrentIndex(index);
-                }}
-              >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  {currentTrack?.id === track.id && (
-                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
+              {currentTrack ? (
+                <div className="flex items-center gap-2">
+                  <Music className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                  <span className="text-sm text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900 px-2 py-1 rounded-full">
+                    {playlist.length}
+                  </span>
+                  <div className="truncate flex-1">
                     <p className="text-lg font-medium truncate text-amber-900 dark:text-amber-100">
-                      {track.title}
+                      {currentTrack.title}
                     </p>
-                    <p className="text-[16px] text-amber-700 dark:text-amber-300 truncate">
-                      {track.artist}
+                    <p className="text-sm text-amber-700 dark:text-amber-300 truncate">
+                      {currentTrack.artist}
                     </p>
                   </div>
+                  <ChevronUp
+                    className={`h-4 w-4 text-amber-600 dark:text-amber-400 transition-transform ${
+                      showPlaylist ? "rotate-180" : ""
+                    }`}
+                  />
                 </div>
+              ) : (
+                <p className="text-lg text-amber-600 dark:text-amber-400">
+                  No track selected
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsShuffled(!isShuffled)}
+                className={`h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 ${
+                  isShuffled
+                    ? "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900"
+                    : "text-amber-700 dark:text-amber-300"
+                }`}
+              >
+                <Shuffle className="h-3 w-3" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePreviousTrack}
+                className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300"
+              >
+                <SkipBack className="h-3 w-3" />
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={handlePlayPause}
+                disabled={!currentTrack}
+                className="h-8 w-8 p-0 bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                {isPlaying ? (
+                  <Pause className="h-4 w-4" />
+                ) : (
+                  <Play className="h-4 w-4" />
+                )}
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleNextTrack}
+                className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300"
+              >
+                <SkipForward className="h-3 w-3" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsRepeating(!isRepeating)}
+                className={`h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 ${
+                  isRepeating
+                    ? "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900"
+                    : "text-amber-700 dark:text-amber-300"
+                }`}
+              >
+                <Repeat className="h-3 w-3" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2 min-w-[120px]">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleMute}
+                className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300"
+              >
+                {isMuted || volume[0] === 0 ? (
+                  <VolumeX className="h-3 w-3" />
+                ) : (
+                  <Volume2 className="h-3 w-3" />
+                )}
+              </Button>
+              <Slider
+                value={volume}
+                max={100}
+                step={1}
+                className="flex-1"
+                onValueChange={handleVolumeChange}
+              />
+            </div>
+
+            {/* add song modal */}
+            <div className="flex items-center gap-2">
+              <AddSongModal onAddSong={handleAddTrack} />
+            </div>
+
+            <PlaylistModal onPlaylistSelect={handlePlaylistSelect} />
+          </div>
+        </div>
+
+        {showPlaylist && (
+          <div className="fixed bottom-16 left-4 right-4 max-w-md mx-auto max-h-80 bg-gradient-to-br from-amber-50/98 to-orange-50/98 dark:from-amber-950/98 dark:to-orange-950/98 backdrop-blur-md border border-amber-200/50 dark:border-amber-800/50 rounded-xl p-4 z-40 overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-lg font-medium text-amber-900 dark:text-amber-100">
+                Playlist ({playlist.length})
+                {isInRoom && (
+                  <span className="text-sm text-amber-600 dark:text-amber-400 ml-2">
+                    {isOwner ? "(Owner)" : "(Member)"}
+                  </span>
+                )}
+              </h4>
+              <div className="flex gap-2">
+                {(!isInRoom || isOwner) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearPlaylist}
+                    className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                    title="Clear All"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteTrack(track.id);
-                  }}
-                  className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 ml-2 flex-shrink-0"
+                  onClick={() => setShowPlaylist(false)}
+                  className="h-6 w-6 p-0 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <X className="h-3 w-3" />
                 </Button>
               </div>
-            ))}
-            {playlist.length === 0 && (
-              <div className="text-center py-8 text-amber-600 dark:text-amber-400">
-                <Music className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-lg">No tracks in playlist</p>
-                <p className="text-sm opacity-75">
-                  Add some music to get started
-                </p>
-              </div>
-            )}
+            </div>
+            <div className="space-y-2">
+              {playlist.map((track, index) => (
+                <div
+                  key={track.id}
+                  className={`flex items-center justify-between p-3 rounded-lg text-sm cursor-pointer transition-all hover:bg-amber-100/70 dark:hover:bg-amber-900/70 ${
+                    currentTrack?.id === track.id
+                      ? "bg-amber-200/70 dark:bg-amber-800/70 ring-1 ring-amber-400/50"
+                      : "bg-white/30 dark:bg-black/20"
+                  }`}
+                  onClick={() => {
+                    if (isInRoom) {
+                      if (isOwner && emitters) {
+                        emitters.requestStateChange({
+                          currentTrackIndex: index,
+                          isPlaying: true,
+                          timestamp: 0,
+                        });
+                      }
+                    } else {
+                      setLocalCurrentIndex(index);
+                      setLocalIsPlaying(true);
+                    }
+                  }}
+                >
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {currentTrack?.id === track.id && (
+                      <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate text-amber-900 dark:text-amber-100">
+                        {track.title}
+                      </p>
+                      <p className="text-[16px] text-amber-700 dark:text-amber-300 truncate">
+                        {track.artist}
+                      </p>
+                    </div>
+                  </div>
+                  {(!isInRoom || isOwner) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteTrack(track.id);
+                      }}
+                      className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 ml-2 flex-shrink-0"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              {playlist.length === 0 && (
+                <div className="text-center py-8 text-amber-600 dark:text-amber-400">
+                  <Music className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-lg">No tracks in playlist</p>
+                  <p className="text-sm opacity-75">
+                    Add some music to get started
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </>
-  );
-}
+        )}
+      </>
+    );
+  }
+);
+
+MusicPlayer.displayName = "MusicPlayer";
