@@ -18,42 +18,42 @@ export const AmbientSounds = forwardRef<AmbientSoundsRef>((_, ref) => {
     {
       id: "rain",
       name: "Rain",
-      url: "https://sv2gb.sharepoint.com/sites/kas-on-cloud/Shared%20Documents/rain.mp3",
+      url: "https://pub-9166648ee67849e49f401e8c823a3279.r2.dev/sound-ambient/rain.mp3",
       isPlaying: false,
       volume: 50,
     },
     {
       id: "water",
       name: "Water",
-      url: "https://sv2gb.sharepoint.com/sites/kas-on-cloud/Shared%20Documents/water.mp3",
+      url: "https://pub-9166648ee67849e49f401e8c823a3279.r2.dev/sound-ambient/water.mp3",
       isPlaying: false,
       volume: 50,
     },
     {
       id: "thunder",
       name: "Thunder",
-      url: "https://sv2gb.sharepoint.com/sites/kas-on-cloud/Shared%20Documents/thunder.mp3",
+      url: "https://pub-9166648ee67849e49f401e8c823a3279.r2.dev/sound-ambient/thunder.mp3",
       isPlaying: false,
       volume: 50,
     },
     {
       id: "keyboard",
       name: "Keyboard",
-      url: "https://sv2gb.sharepoint.com/sites/kas-on-cloud/Shared%20Documents/keyboard.mp3",
+      url: "https://pub-9166648ee67849e49f401e8c823a3279.r2.dev/sound-ambient/keyboard.mp3",
       isPlaying: false,
       volume: 50,
     },
     {
       id: "nature",
       name: "Nature",
-      url: "https://sv2gb.sharepoint.com/sites/kas-on-cloud/Shared%20Documents/nature.mp3",
+      url: "https://pub-9166648ee67849e49f401e8c823a3279.r2.dev/sound-ambient/nature.mp3",
       isPlaying: false,
       volume: 50,
     },
     {
       id: "coffee",
       name: "Coffee",
-      url: "https://sv2gb.sharepoint.com/sites/kas-on-cloud/Shared%20Documents/coffee_shop.mp3",
+      url: "https://pub-9166648ee67849e49f401e8c823a3279.r2.dev/sound-ambient/coffe_shop.mp3",
       isPlaying: false,
       volume: 50,
     },
@@ -66,6 +66,7 @@ export const AmbientSounds = forwardRef<AmbientSoundsRef>((_, ref) => {
       prev.map((s) => {
         if (s.id === id) {
           const audio = audioRefs.current[id];
+          console.log("sounds -==> ", audio)
           if (audio) {
             if (s.isPlaying) audio.pause();
             else audio.play();

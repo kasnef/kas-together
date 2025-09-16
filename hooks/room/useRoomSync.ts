@@ -1,9 +1,10 @@
+"use client";
+
 // hooks/useRoomMusicSync.ts
 import { useEffect, useRef } from "react";
 import { socket } from "@/lib/socket";
 import { useRoomMusicStore } from "@/store/useMusicStore";
 import type { Song } from "@/data/music-playlist";
-// ... (imports các kiểu dữ liệu)
 
 export const useRoomMusicSync = (
   roomId: string | null,
@@ -22,7 +23,7 @@ export const useRoomMusicSync = (
   useEffect(() => {
     handleStateUpdateRef.current = (stateFromServer: any) => {
       console.log(
-        "CLIENT: Handler is executing with latest state. Received:",
+        "[v0] CLIENT: Handler is executing with latest state. Received:",
         stateFromServer
       );
       setRoomSyncState({
@@ -45,15 +46,22 @@ export const useRoomMusicSync = (
     }
     if (!socket.connected) socket.connect();
 
-    // --- EMITTERS: Gửi YÊU CẦU lên server ---
     const emitters = {
       requestStateChange: (state: any) => {
-        console.log("CLIENT: Requesting state change:", state);
-        socket.emit("music:sync_state", { roomId, userId, state });
+        console.log("[v0] CLIENT: Requesting state change:", state);
+        if (socket.connected) {
+          socket.emit("music:sync_state", { roomId, userId, state });
+        } else {
+          console.error("[v0] CLIENT: Socket not connected, cannot sync state");
+        }
       },
       requestAddTrack: (track: Song, clearDefault: boolean) => {
-        console.log("CLIENT: Requesting to add track:", track);
-        socket.emit("music:add_track", { roomId, track, clearDefault });
+        console.log("[v0] CLIENT: Requesting to add track:", track);
+        if (socket.connected) {
+          socket.emit("music:add_track", { roomId, track, clearDefault });
+        } else {
+          console.error("[v0] CLIENT: Socket not connected, cannot add track");
+        }
       },
     };
     setSocketEmitters(emitters);
@@ -62,15 +70,34 @@ export const useRoomMusicSync = (
       handleStateUpdateRef.current(stateFromServer);
     };
 
+    const handleConnect = () => {
+      console.log("[v0] CLIENT: Socket connected, requesting initial state");
+      socket.emit("music:get_initial_state", { roomId, userId });
+    };
+
+    const handleDisconnect = () => {
+      console.log("[v0] CLIENT: Socket disconnected");
+    };
+
+    const handleConnectError = (error: any) => {
+      console.error("[v0] CLIENT: Socket connection error:", error);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
     socket.on("music:state_update", socketListener);
 
-    // --- YÊU CẦU TRẠNG THÁI BAN ĐẦU ---
-    // Đây là "Cú Bắt Tay" quan trọng nhất.
-    console.log("CLIENT: Requesting initial music state for room", roomId);
-    socket.emit("music:get_initial_state", { roomId, userId });
+    // Request initial state if already connected
+    if (socket.connected) {
+      handleConnect();
+    }
 
     return () => {
-      console.log("CLIENT: Cleaning up music listeners.");
+      console.log("[v0] CLIENT: Cleaning up music listeners.");
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleConnectError);
       socket.off("music:state_update", socketListener);
       clearRoomSyncState();
     };

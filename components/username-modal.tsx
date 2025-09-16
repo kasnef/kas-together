@@ -39,15 +39,18 @@ export function UsernameModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={() => {}} // Prevent closing
+    >
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/10 backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md" />
       <DialogContent
         className="sm:max-w-md bg-white/80 dark:bg-zinc-900/20 
             backdrop-blur-md border border-zinc-200/50 
             dark:border-zinc-800/50 shadow-2xl"
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        showCloseButton={false}
+        showCloseButton={false} // Remove close button
+        onEscapeKeyDown={(e) => e.preventDefault()} // Prevent escape key
+        onPointerDownOutside={(e) => e.preventDefault()} // Prevent outside clicks
       >
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
@@ -61,11 +64,20 @@ export function UsernameModal({
             placeholder="Type your username..."
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && username.trim()) {
+                handleConfirm();
+              }
+            }}
           />
         </div>
 
         <DialogFooter>
-          <Button onClick={handleConfirm} disabled={!username.trim()}>
+          <Button
+            onClick={handleConfirm}
+            disabled={!username.trim()}
+            className="w-full"
+          >
             Confirm
           </Button>
         </DialogFooter>

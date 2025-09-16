@@ -36,20 +36,6 @@ export const ShortLovePlaylist: Song[] = [
     url: "https://www.youtube.com/watch?v=Q7p5P3J8kYw",
   },
   {
-    id: "when-we-first-met-1",
-    title: "when we first met",
-    name: "when we first met",
-    artist: "Haru Pandi",
-    url: "https://www.youtube.com/watch?v=lirB3fiuVfE",
-  },
-  {
-    id: "haruko-sweven-how-we-burned-so-bright-lovers-walk-comp-1",
-    title: "Haruko & Sweven - how we burned so bright (lovers walk 💝 comp)",
-    name: "Haruko & Sweven - how we burned so bright (lovers walk 💝 comp)",
-    artist: "Haruko",
-    url: "https://www.youtube.com/watch?v=ztTBuvUGEjc",
-  },
-  {
     id: "it-was-always-us-1",
     title: "it was always us",
     name: "it was always us",
@@ -92,41 +78,6 @@ export const ShortLovePlaylist: Song[] = [
     url: "https://www.youtube.com/watch?v=IOpqFDLk13s",
   },
   {
-    id: "running-away-with-you-1",
-    title: "running away with you",
-    name: "running away with you",
-    artist: "Sblmnl - Topic",
-    url: "https://www.youtube.com/watch?v=-mu6dDLUcmk",
-  },
-  {
-    id: "when-i-fall-in-love-lofi-anime-lofi-piano-1",
-    title: "when i fall in love 💘  | lofi anime | lofi piano",
-    name: "when i fall in love 💘  | lofi anime | lofi piano",
-    artist: "Cotton Vibe",
-    url: "https://www.youtube.com/watch?v=_-sOtff5okY",
-  },
-  {
-    id: "the-beginning-of-a-love-story-1",
-    title: "the beginning of a love story",
-    name: "the beginning of a love story",
-    artist: "Luis Wijaya - Topic",
-    url: "https://www.youtube.com/watch?v=pUYVF3curEc",
-  },
-  {
-    id: "lean-a-little-closer-1",
-    title: "lean a little closer",
-    name: "lean a little closer",
-    artist: "Haru Pandi",
-    url: "https://www.youtube.com/watch?v=QCK0bMmrjKk",
-  },
-  {
-    id: "i-wish-we-could-stay-in-this-moment-forever-1",
-    title: "i wish we could stay in this moment forever",
-    name: "i wish we could stay in this moment forever",
-    artist: "Azuku - Topic",
-    url: "https://www.youtube.com/watch?v=9zV3vL58VCk",
-  },
-  {
     id: "i-thought-of-you-when-i-saw-the-sky-1",
     title: "i thought of you when i saw the sky",
     name: "i thought of you when i saw the sky",
@@ -154,6 +105,114 @@ export const ShortLovePlaylist: Song[] = [
     name: "Fall In Love 🌸 Lofi Keep You Safe 🌱 Lofi Hip Hop - Chillhop [ Relax - Calm - Sleep ]",
     artist: "LOFI KEEP YOU SAFE",
     url: "https://www.youtube.com/watch?v=zhccTYy8kNY",
+  },
+  {
+    id: "let-s-run-away-together-r-b-playlist",
+    title: "let’s run away together ‧ ₊ ˚⛰️ ༘ ⋆ || r&b playlist 🎧",
+    name: "let’s run away together ‧ ₊ ˚⛰️ ༘ ⋆ || r&b playlist 🎧",
+    artist: "mooché",
+    url: "https://www.youtube.com/watch?v=-4w-YpzP2z4",
+  },
+  {
+    id: "playlist-you-are-falling-in-love",
+    title: "(playlist) you are falling in love",
+    name: "(playlist) you are falling in love",
+    artist: "Luminis",
+    url: "https://www.youtube.com/watch?v=oLHXyD7RTGk",
+  },
+  {
+    id: "pov-u-are-falling-in-love-playlist",
+    title: "pov: u are falling in love [playlist]",
+    name: "pov: u are falling in love [playlist]",
+    artist: "celestial",
+    url: "https://www.youtube.com/watch?v=Mw0rHsP_UKE",
+  },
+  {
+    id: "pov-that-feels-like-falling-in-love-playlist-love-chill-vibes",
+    title:
+      "pov: that feels like falling in love [Playlist] - Love & Chill Vibes",
+    name: "pov: that feels like falling in love [Playlist] - Love & Chill Vibes",
+    artist: "Love & Chill Vibes",
+    url: "https://www.youtube.com/watch?v=M-Vus7kqy1o",
+  },
+  {
+    id: "playlist-u-are-falling-in-love",
+    title: "(playlist) u are falling in love",
+    name: "(playlist) u are falling in love",
+    artist: "Celestara",
+    url: "https://www.youtube.com/watch?v=kn69n6DFsp4",
+  },
+  {
+    id: "pov-soft-song-that-heals-your-heart-playlist",
+    title: "pov: Soft song that heals your heart [playlist]",
+    name: "pov: Soft song that heals your heart [playlist]",
+    artist: "celestial",
+    url: "https://www.youtube.com/watch?v=UIDcT_4DUek",
+  },
+  {
+    id: "playlist-you-are-falling-in-love-1",
+    title: "(playlist) you are falling in love",
+    name: "(playlist) you are falling in love",
+    artist: "Celestara",
+    url: "https://www.youtube.com/watch?v=6a6xAuPO8Jk",
+  },
+  {
+    id: "pov-and-suddenly-all-the-songs-were-about-you-playlist-love-chill-vibes",
+    title:
+      "pov: and suddenly all the songs were about you [playlist] - Love & Chill Vibes",
+    name: "pov: and suddenly all the songs were about you [playlist] - Love & Chill Vibes",
+    artist: "Love & Chill Vibes",
+    url: "https://www.youtube.com/watch?v=Mbgh1vv7lfA",
+  },
+  {
+    id: "1-hour-with-only-the-best-songs-wave-to-earth-beabadoobee-laufey-leehi-and-others",
+    title:
+      "౨ৎ ˖ ࣪⊹1 hour with only the best songs [wave to earth, beabadoobee, Laufey, LeeHi and others] ౨ৎ 🤍",
+    name: "౨ৎ ˖ ࣪⊹1 hour with only the best songs [wave to earth, beabadoobee, Laufey, LeeHi and others] ౨ৎ 🤍",
+    artist: "Sweetgiih ˚୨୧⋆｡",
+    url: "https://www.youtube.com/watch?v=lyEvE69idnQ",
+  },
+  {
+    id: "pov-love-that-never-fades-playlist-love-chill-vibes",
+    title: "POV: love that never fades [Playlist] - Love & Chill Vibes",
+    name: "POV: love that never fades [Playlist] - Love & Chill Vibes",
+    artist: "Love & Chill Vibes",
+    url: "https://www.youtube.com/watch?v=o42ktuIaY_Y",
+  },
+  {
+    id: "maybe-in-another-life-a-playlist",
+    title: "maybe in another life. | a playlist ₊˚⊹",
+    name: "maybe in another life. | a playlist ₊˚⊹",
+    artist: "just vibin ~",
+    url: "https://www.youtube.com/watch?v=15iBdWAjXpo",
+  },
+  {
+    id: "love-like-when-i-fly-towards-you",
+    title: "love like when i fly towards you ۶ৎ",
+    name: "love like when i fly towards you ۶ৎ",
+    artist: "chennn",
+    url: "https://www.youtube.com/watch?v=3L_i0VqAC94",
+  },
+  {
+    id: "pov-soft-song-that-heals-your-heart-playlist-1",
+    title: "pov: Soft song that heals your heart [playlist]",
+    name: "pov: Soft song that heals your heart [playlist]",
+    artist: "celestial",
+    url: "https://www.youtube.com/watch?v=UIDcT_4DUek",
+  },
+  {
+    id: "pov-i-wanna-be-yours-playlist",
+    title: "pov: i wanna be yours 💌 [playlist]",
+    name: "pov: i wanna be yours 💌 [playlist]",
+    artist: "Ophelia",
+    url: "https://www.youtube.com/watch?v=I8c3v5STIjg",
+  },
+  {
+    id: "pov-you-fell-inlove-a-tagalog-playlist",
+    title: "POV: you fell inlove, A tagalog playlist",
+    name: "POV: you fell inlove, A tagalog playlist",
+    artist: "xsyco",
+    url: "https://www.youtube.com/watch?v=TfpCNZzwDps",
   },
 ];
 
@@ -446,6 +505,142 @@ export const RelaxPlaylist: Song[] = [
     artist: "Lofi Girl",
     url: "https://www.youtube.com/watch?v=1bvbsx-hpFc",
   },
+  {
+    id: "coast-nostalgic-acoustic-for-slow-drives-and-soft-hearts-1",
+    title: "coast _____. | nostalgic acoustic for slow drives and soft hearts",
+    name: "coast _____. | nostalgic acoustic for slow drives and soft hearts",
+    artist: "fill in the _.",
+    url: "https://www.youtube.com/watch?v=RmzrMPy4i-M",
+  },
+  {
+    id: "fall-night-new-york-city-balcony-to-sleep-chill-focus-city-and-wind-sound-1",
+    title:
+      "Fall Night New York City Balcony to Sleep, Chill, Focus 🌃😌🍁 (City and Wind Sound)",
+    name: "Fall Night New York City Balcony to Sleep, Chill, Focus 🌃😌🍁 (City and Wind Sound)",
+    artist: "COZINESS CO.",
+    url: "https://www.youtube.com/watch?v=5z8wNPDwSn8",
+  },
+  {
+    id: "stillness-1",
+    title: "Stillness..",
+    name: "Stillness..",
+    artist: "Aftertone",
+    url: "https://www.youtube.com/watch?v=btdXero87Nc",
+  },
+  {
+    id: "morning-nostalgic-acoustic-guitar-for-studying-reading-slow-mornings-1",
+    title:
+      "morning _____. | nostalgic acoustic guitar for studying, reading & slow mornings",
+    name: "morning _____. | nostalgic acoustic guitar for studying, reading & slow mornings",
+    artist: "fill in the _.",
+    url: "https://www.youtube.com/watch?v=D9bBA3Zq8lY",
+  },
+  {
+    id: "playlist-1",
+    title: "[playlist] 고요한 계절, 낭만의 순간이었다",
+    name: "[playlist] 고요한 계절, 낭만의 순간이었다",
+    artist: "ordinary music",
+    url: "https://www.youtube.com/watch?v=rMoymQVFZBU",
+  },
+  {
+    id: "rain-books-and-coffee-playlist-1",
+    title: "rain, books and coffee (playlist)",
+    name: "rain, books and coffee (playlist)",
+    artist: "nobody",
+    url: "https://www.youtube.com/watch?v=R-bI0AhSyU0",
+  },
+  {
+    id: "medieval-music-for-focus-study-the-wanderer-s-quiet-quest-1",
+    title: "Medieval Music for Focus & Study | The Wanderer’s Quiet Quest",
+    name: "Medieval Music for Focus & Study | The Wanderer’s Quiet Quest",
+    artist: "Forest Of Light",
+    url: "https://www.youtube.com/watch?v=LWZxOwLydbY",
+  },
+  {
+    id: "a-youth-1",
+    title: "(a). youth",
+    name: "(a). youth",
+    artist: "what is ?",
+    url: "https://www.youtube.com/watch?v=tqxstrFd6CU",
+  },
+  {
+    id: "-1",
+    title: "숨",
+    name: "숨",
+    artist: "Pidalso",
+    url: "https://www.youtube.com/watch?v=kSiHQpz5gLM",
+  },
+  {
+    id: "flower-relaxing-acoustic",
+    title: "flower ______. | relaxing acoustic",
+    name: "flower ______. | relaxing acoustic",
+    artist: "fill in the _.",
+    url: "https://www.youtube.com/watch?v=_hzP1hPBND0",
+  },
+  {
+    id: "we-grew-nostalgic-acoustic-guitar-for-relaxing-reading-studying",
+    title:
+      "we grew _____. | nostalgic acoustic guitar for relaxing, reading & studying",
+    name: "we grew _____. | nostalgic acoustic guitar for relaxing, reading & studying",
+    artist: "fill in the _.",
+    url: "https://www.youtube.com/watch?v=mHvEQyFJAhY",
+  },
+  {
+    id: "playlist-l",
+    title: "[playlist] 풀피리 언덕의 노래 l 휴식 플레이리스트",
+    name: "[playlist] 풀피리 언덕의 노래 l 휴식 플레이리스트",
+    artist: "SoundStills",
+    url: "https://www.youtube.com/watch?v=LQaO1ui3CtE",
+  },
+  {
+    id: "playlist-l-1",
+    title: "[playlist] 바람계곡의 노래 l 꿈결 플레이리스트",
+    name: "[playlist] 바람계곡의 노래 l 꿈결 플레이리스트",
+    artist: "SoundStills",
+    url: "https://www.youtube.com/watch?v=BSAjLUB1cZU",
+  },
+  {
+    id: "video",
+    title: "숲의 노래",
+    name: "숲의 노래",
+    artist: "Pidalso",
+    url: "https://www.youtube.com/watch?v=_R2nZa8grno",
+  },
+  {
+    id: "piano-ghibli-collection-1",
+    title: "Piano Ghibli Collection 1",
+    name: "Piano Ghibli Collection 1",
+    artist: "Vangakuz ヴァンガクズ",
+    url: "https://www.youtube.com/watch?v=HGl75kurxok",
+  },
+  {
+    id: "to-live-is",
+    title: "To live is,",
+    name: "To live is,",
+    artist: "Aftertone",
+    url: "https://www.youtube.com/watch?v=sz8YsU_D8v0",
+  },
+  {
+    id: "1-hour-of-best-relaxing-studio-ghibli-music-flute",
+    title: "1 hour of best relaxing studio ghibli music flute",
+    name: "1 hour of best relaxing studio ghibli music flute",
+    artist: "岛市老八",
+    url: "https://www.youtube.com/watch?v=Dhm7E3MFIIw",
+  },
+  {
+    id: "medieval-music-for-focus-relaxation-the-gray-wizard-s-journey",
+    title: "Medieval Music for Focus & Relaxation | The Gray Wizard’s Journey",
+    name: "Medieval Music for Focus & Relaxation | The Gray Wizard’s Journey",
+    artist: "Forest Of Light",
+    url: "https://www.youtube.com/watch?v=LCfEqudu4pc",
+  },
+  {
+    id: "hoa-ost-full-soundtrack",
+    title: "HOA OST Full Soundtrack",
+    name: "HOA OST Full Soundtrack",
+    artist: "Basil Music",
+    url: "https://www.youtube.com/watch?v=7zpvkEIkJyg",
+  },
 ];
 
 export const SadnessPlaylist: Song[] = [
@@ -553,6 +748,77 @@ export const SadnessPlaylist: Song[] = [
     name: "dreaming of you at 3am",
     artist: "the bootleg boy",
     url: "https://www.youtube.com/watch?v=CA9wyPM3JWI",
+  },
+  {
+    id: "a-playlist-to-be-alone-with-everything-you-re-feeling",
+    title: "A playlist to be alone with everything you’re feeling..",
+    name: "A playlist to be alone with everything you’re feeling..",
+    artist: "Pianza",
+    url: "https://www.youtube.com/watch?v=8Z09G5o4F6M",
+  },
+  {
+    id: "the-pain-of-recalling-memories-of-an-empty-life-playlist",
+    title: "the pain of recalling memories of an empty life (playlist)",
+    name: "the pain of recalling memories of an empty life (playlist)",
+    artist: "nobody",
+    url: "https://www.youtube.com/watch?v=JUPoUnqDArk",
+  },
+  {
+    id: "a-playlist-for-quiet-hearts",
+    title: "A playlist for quiet hearts..",
+    name: "A playlist for quiet hearts..",
+    artist: "Pianza",
+    url: "https://www.youtube.com/watch?v=1J5CIzQAlgY",
+  },
+  {
+    id: "feel-so-alone-sad-lofi-hip-hop-mix",
+    title: "Feel so alone  💭  Sad lofi hip hop mix",
+    name: "Feel so alone  💭  Sad lofi hip hop mix",
+    artist: "Dreamy",
+    url: "https://www.youtube.com/watch?v=zqmIUKoe-q0",
+  },
+  {
+    id: "best-of-neheart-ambient-mix",
+    title: "best of øneheart // ambient mix",
+    name: "best of øneheart // ambient mix",
+    artist: "dreamscape",
+    url: "https://www.youtube.com/watch?v=hzLdZWIeq3c",
+  },
+  {
+    id: "one-more-night-feeling-like-the-loneliest-person-in-the-world-a-playlist",
+    title:
+      "one more night feeling like the loneliest person in the world (a playlist)",
+    name: "one more night feeling like the loneliest person in the world (a playlist)",
+    artist: "nobody",
+    url: "https://www.youtube.com/watch?v=NKaxQcSC4VU",
+  },
+  {
+    id: "a-playlist-that-makes-you-feel-calm-and-dreamy",
+    title: "A playlist that makes you feel calm and dreamy..",
+    name: "A playlist that makes you feel calm and dreamy..",
+    artist: "Pianza",
+    url: "https://www.youtube.com/watch?v=MWPYhebILb4",
+  },
+  {
+    id: "sad-songs-warning-these-songs-will-make-you-cry",
+    title: "Sad songs // WARNING! These songs will make you cry",
+    name: "Sad songs // WARNING! These songs will make you cry",
+    artist: "hwbszqk",
+    url: "https://www.youtube.com/watch?v=SIHDpxLA-kE",
+  },
+  {
+    id: "i-didn-t-know-that-it-was-our-last-time-together-playlist",
+    title: "I didn't know that it was our last time together; playlist",
+    name: "I didn't know that it was our last time together; playlist",
+    artist: "MINDFULNESS LOFI Ambient Music",
+    url: "https://www.youtube.com/watch?v=4Ts9FddJiQA",
+  },
+  {
+    id: "going-home-on-a-rainy-evening-sad-playlist",
+    title: "going home on a rainy evening ~ sad playlist🎧",
+    name: "going home on a rainy evening ~ sad playlist🎧",
+    artist: "dilyashes ",
+    url: "https://www.youtube.com/watch?v=J1GerpUssss",
   },
 ];
 
@@ -670,9 +936,159 @@ export const WorkingPlaylist: Song[] = [
     artist: "WRG 우리가 듣고 싶어서 연주한 playlist",
     url: "https://www.youtube.com/watch?v=YhyBXm9HKC4",
   },
+  {
+    id: "music-for-deep-focus",
+    title: "Music for Deep Focus",
+    name: "Music for Deep Focus",
+    artist: "nαnα ִֶָ",
+    url: "https://www.youtube.com/watch?v=vpcE6YEdQbY",
+  },
+  {
+    id: "you-re-studying-at-an-oxford-library-at-night-dark-academia-playlist",
+    title:
+      "You're Studying at an Oxford Library at Night | Dark Academia Playlist",
+    name: "You're Studying at an Oxford Library at Night | Dark Academia Playlist",
+    artist: "Toxic Drunker",
+    url: "https://www.youtube.com/watch?v=iTC49Hi4hb8",
+  },
+  {
+    id: "the-best-study-playlist-to-keep-you-happy-and-motivated-study-chill-relax-travel",
+    title:
+      "the best study playlist to keep you happy and motivated 💖 [ study, chill, relax, travel ]",
+    name: "the best study playlist to keep you happy and motivated 💖 [ study, chill, relax, travel ]",
+    artist: "Lily's Corner",
+    url: "https://www.youtube.com/watch?v=mJW57E7GpSo",
+  },
+  {
+    id: "romanticizing-studying-playlist",
+    title: "romanticizing studying playlist",
+    name: "romanticizing studying playlist",
+    artist: "azelia",
+    url: "https://www.youtube.com/watch?v=8tCLsotnM4o",
+  },
+  {
+    id: "the-smell-of-old-books-reading-writing-and-studying-a-dark-academia-playlist",
+    title:
+      "the smell of old books, reading, writing and studying (a dark academia playlist)",
+    name: "the smell of old books, reading, writing and studying (a dark academia playlist)",
+    artist: "Anamaria Stanciu",
+    url: "https://www.youtube.com/watch?v=HCV-2-IoIXs",
+  },
+  {
+    id: "meditation-monoman-beautiful-comment-section-peaceful-relaxing-soothing-study-sleep-relax",
+    title:
+      "Meditation - Monoman .beautiful comment section peaceful relaxing soothing [Study Sleep Relax 💖]",
+    name: "Meditation - Monoman .beautiful comment section peaceful relaxing soothing [Study Sleep Relax 💖]",
+    artist: "MONOMAN",
+    url: "https://www.youtube.com/watch?v=FjHGZj2IjBk",
+  },
+  {
+    id: "chill-cozy-acoustic-instrumentals-vol-1-relax-study-focus",
+    title:
+      "Chill + Cozy Acoustic Instrumentals | Vol. 1 🌱 - relax/study/focus",
+    name: "Chill + Cozy Acoustic Instrumentals | Vol. 1 🌱 - relax/study/focus",
+    artist: "Andrew Gialanella",
+    url: "https://www.youtube.com/watch?v=BrhYl50WVJ8",
+  },
+  {
+    id: "study-music-my-go-to-playlist-as-a-computer-science-major",
+    title: "study music📚my go to playlist as a computer science major",
+    name: "study music📚my go to playlist as a computer science major",
+    artist: "sArchive",
+    url: "https://www.youtube.com/watch?v=Yys43tMxMoc",
+  },
+  {
+    id: "a-calm-playlist-for-reading-studying-or-writing",
+    title: "a calm playlist for reading, studying or writing",
+    name: "a calm playlist for reading, studying or writing",
+    artist: "Ophelia Wilde",
+    url: "https://www.youtube.com/watch?v=03IAR5O07h0",
+  },
+  {
+    id: "jazz-at-the-library-1-hour-jazz-music-library-ambience-studying-music-work-aid",
+    title:
+      "Jazz at the Library 📚 1 Hour Jazz Music 📖 Library Ambience | Studying Music | Work Aid 🎧",
+    name: "Jazz at the Library 📚 1 Hour Jazz Music 📖 Library Ambience | Studying Music | Work Aid 🎧",
+    artist: "Chill Crossing Hour",
+    url: "https://www.youtube.com/watch?v=ZbyxjGE885I",
+  },
+  {
+    id: "productivity-boost-lofi-study-music-for-deep-concentration-lofi-study-room-study-work-relax",
+    title:
+      "Productivity Boost 📖 Lofi Study Music for Deep Concentration ~ Lofi Study Room [study/work/relax]",
+    name: "Productivity Boost 📖 Lofi Study Music for Deep Concentration ~ Lofi Study Room [study/work/relax]",
+    artist: "Lofi Study Room",
+    url: "https://www.youtube.com/watch?v=amfWIRasxtI",
+  },
+  {
+    id: "video",
+    title:
+      "𝐩𝐥𝐚𝐲𝐥𝐢𝐬𝐭 𝐟𝐨𝐫 𝐬𝐭𝐮𝐝𝐲𝐢𝐧𝐠 | 𝐜𝐚𝐥𝐦 𝐩𝐥𝐚𝐲𝐥𝐢𝐬𝐭 𝐭𝐨 𝐫𝐞𝐥𝐚𝐱 | 𝐆𝐢𝐛𝐫𝐚𝐧 𝐀𝐥𝐜𝐨𝐜𝐞𝐫 𝐩𝐥𝐚𝐲𝐥𝐢𝐬𝐭 🕯️",
+    name: "𝐩𝐥𝐚𝐲𝐥𝐢𝐬𝐭 𝐟𝐨𝐫 𝐬𝐭𝐮𝐝𝐲𝐢𝐧𝐠 | 𝐜𝐚𝐥𝐦 𝐩𝐥𝐚𝐲𝐥𝐢𝐬𝐭 𝐭𝐨 𝐫𝐞𝐥𝐚𝐱 | 𝐆𝐢𝐛𝐫𝐚𝐧 𝐀𝐥𝐜𝐨𝐜𝐞𝐫 𝐩𝐥𝐚𝐲𝐥𝐢𝐬𝐭 🕯️",
+    artist: "full of tension ",
+    url: "https://www.youtube.com/watch?v=CGdxQLIVt9M",
+  },
 ];
 
 export const SleepPlaylist: Song[] = [
+  {
+    id: "best-of-neheart-antent-reidenshi-tilekid-knonzzz-ambient-music-mix",
+    title:
+      "best of øneheart, antent, reidenshi, tilekid, knonzzz | ambient music mix",
+    name: "best of øneheart, antent, reidenshi, tilekid, knonzzz | ambient music mix",
+    artist: "dreamslow",
+    url: "https://www.youtube.com/watch?v=NaZeslUINF4",
+  },
+  {
+    id: "winter-peaceful-acoustic",
+    title: "winter _____ . | peaceful acoustic",
+    name: "winter _____ . | peaceful acoustic",
+    artist: "fill in the _.",
+    url: "https://www.youtube.com/watch?v=lrE8fWHHyW4",
+  },
+  {
+    id: "it-s-okay-go-to-sleep",
+    title: "it's okay, go to sleep",
+    name: "it's okay, go to sleep",
+    artist: "she's gone",
+    url: "https://www.youtube.com/watch?v=iFyBF70I2fc",
+  },
+  {
+    id: "sometimes-we-have-to-let-go",
+    title: "sometimes, we have to let go.",
+    name: "sometimes, we have to let go.",
+    artist: "Mylesxiety",
+    url: "https://www.youtube.com/watch?v=gWkabqRG2rM",
+  },
+  {
+    id: "it-s-late-you-need-rest",
+    title: "it's late, you need rest.",
+    name: "it's late, you need rest.",
+    artist: "she's gone",
+    url: "https://www.youtube.com/watch?v=Kver_SmdTKg",
+  },
+  {
+    id: "calm-your-heart",
+    title: "calm your heart.",
+    name: "calm your heart.",
+    artist: "made from dreams",
+    url: "https://www.youtube.com/watch?v=1R47EQrxgfw",
+  },
+  {
+    id: "summer-acoustic-for-just-chilling-through-summer-days-and-sunburns",
+    title:
+      "summer _____. | acoustic for just chilling through summer days and sunburns",
+    name: "summer _____. | acoustic for just chilling through summer days and sunburns",
+    artist: "fill in the _.",
+    url: "https://www.youtube.com/watch?v=K3JSDlGCuw8",
+  },
+  {
+    id: "flower-relaxing-acoustic",
+    title: "flower ______. | relaxing acoustic",
+    name: "flower ______. | relaxing acoustic",
+    artist: "fill in the _.",
+    url: "https://www.youtube.com/watch?v=_hzP1hPBND0",
+  },
   {
     id: "no-more-thinking-tonight-minecraft-music-w-soft-rain-1",
     title: "no more thinking tonight... (minecraft music w/ soft rain)",
@@ -784,6 +1200,115 @@ export const SleepPlaylist: Song[] = [
   },
 ];
 
+export const VietnameseAcoustic: Song[] = [
+  {
+    id: "m-gi-c-m-tr-a-t-ng-l-c-em-ch-d-u-m-a-nh-ng-b-n-hits-nh-nh-ng-c-c-chill-th-gi-n-cover",
+    title:
+      "Mơ, Giấc Mơ Trưa, Từng Là, Có Em Chờ, Dấu Mưa - Những Bản Hits Nhẹ Nhàng Cực Chill Thư Giãn [COVER]",
+    name: "Mơ, Giấc Mơ Trưa, Từng Là, Có Em Chờ, Dấu Mưa - Những Bản Hits Nhẹ Nhàng Cực Chill Thư Giãn [COVER]",
+    artist: "Soul Tracks",
+    url: "https://www.youtube.com/watch?v=plrqhgNHgHY",
+  },
+  {
+    id: "s-r-ng-b-n-th-n-l-i-rung-ng-th-m-l-n-n-a-g-c-nh-c-indie",
+    title: "Sợ rằng bản thân lại rung động thêm lần nữa... / Góc nhạc Indie",
+    name: "Sợ rằng bản thân lại rung động thêm lần nữa... / Góc nhạc Indie",
+    artist: "Chang",
+    url: "https://www.youtube.com/watch?v=U-BdWNJ9b44",
+  },
+  {
+    id: "radio-m-y-b-i-nh-c-indie",
+    title: "radio ♪ mấy bài nhạc indie",
+    name: "radio ♪ mấy bài nhạc indie",
+    artist: "Jen Hoang",
+    url: "https://www.youtube.com/watch?v=lacXwImyrK4",
+  },
+  {
+    id: "g-i-n-em-ng-i-con-g-i-anh-t-ng-th-ng-g-c-nh-c-indie",
+    title: "Gửi đến em... người con gái anh từng thương... / Góc nhạc Indie",
+    name: "Gửi đến em... người con gái anh từng thương... / Góc nhạc Indie",
+    artist: "Chang",
+    url: "https://www.youtube.com/watch?v=ODMKml8ZjvE",
+  },
+  {
+    id: "t-ng-l-gi-a-i-l-ng-t-y-thu-cu-i-c-em-ch-nh-ng-b-n-hits-nh-c-tr-nh-nh-ng-c-c-chill",
+    title:
+      "Từng Là, Giữa Đại Lộ Đông Tây, Thu Cuối, Có Em Chờ  - Những Bản Hits Nhạc Trẻ Nhẹ Nhàng Cực Chill",
+    name: "Từng Là, Giữa Đại Lộ Đông Tây, Thu Cuối, Có Em Chờ  - Những Bản Hits Nhạc Trẻ Nhẹ Nhàng Cực Chill",
+    artist: "Soul Tracks",
+    url: "https://www.youtube.com/watch?v=m7Wya6Z-QdM",
+  },
+  {
+    id: "nh-ng-b-n-nh-c-indie-b-t-h-b-l-ng-qu-n-t-m-m-t-ng-i-nh-th-nh-c-indie-nh-nh-ng-hay-nh-t",
+    title:
+      "NHỮNG BẢN NHẠC INDIE BẤT HỦ BỊ LÃNG QUÊN / tìm một người như thế nhạc indie nhẹ nhàng hay nhất",
+    name: "NHỮNG BẢN NHẠC INDIE BẤT HỦ BỊ LÃNG QUÊN / tìm một người như thế nhạc indie nhẹ nhàng hay nhất",
+    artist: "Hinkunn",
+    url: "https://www.youtube.com/watch?v=LZJfBytW6VQ",
+  },
+  {
+    id: "top-16-b-n-hit-tri-u-view-acoustic-nh-nh-ng-th-gi-n-suy-ngh-trong-anh-m-d-u-m-a-c-em-ch",
+    title:
+      "Top 16 Bản Hit Triệu View Acoustic Nhẹ Nhàng Thư Giãn - Suy Nghĩ Trong Anh, Mơ, Dấu Mưa, Có Em Chờ",
+    name: "Top 16 Bản Hit Triệu View Acoustic Nhẹ Nhàng Thư Giãn - Suy Nghĩ Trong Anh, Mơ, Dấu Mưa, Có Em Chờ",
+    artist: "Bài Hát Yêu Thích - MUSIC",
+    url: "https://www.youtube.com/watch?v=VULY35JNfkM",
+  },
+  {
+    id: "playlist-nh-c-guitar-chill-nger-mck-tony-2-1-0-9",
+    title: "Playlist nhạc guitar chill Nger ( MCK ) | Tony 2 1 0 9",
+    name: "Playlist nhạc guitar chill Nger ( MCK ) | Tony 2 1 0 9",
+    artist: "Tony 2 1 0 9",
+    url: "https://www.youtube.com/watch?v=xaM_vcE28RI",
+  },
+  {
+    id: "th-nh-suy-x-drixen-ng-tag-live-session-ss01-ep01",
+    title: "THỊNH SUY x DRIXEN - ĐỘNG TAG LIVE SESSION - SS01 | EP01",
+    name: "THỊNH SUY x DRIXEN - ĐỘNG TAG LIVE SESSION - SS01 | EP01",
+    artist: "Cổ Động",
+    url: "https://www.youtube.com/watch?v=fJs1Mx0L6OQ",
+  },
+  {
+    id: "playlist-h-n-m-t-mai-tr-i-tim-qua-gi-ng-b-o-s-c-ng-ng-i-th-ng-th-o-chuy-n-tr-m-n-m",
+    title:
+      "[Playlist] hẹn một mai trái tim qua giông bão, sẽ cùng người thương thảo chuyện trăm năm...",
+    name: "[Playlist] hẹn một mai trái tim qua giông bão, sẽ cùng người thương thảo chuyện trăm năm...",
+    artist: "SE.I",
+    url: "https://www.youtube.com/watch?v=081UseLHeXY",
+  },
+  {
+    id: "m-gi-c-m-tr-a-b-o-d-t-m-y-tr-i-b-nh-tr-i-n-c-list-nh-c-acoustic-nh-nh-ng-b-n-n-n-nghe-th",
+    title:
+      "Mơ, Giấc Mơ Trưa, Bèo Dạt Mây Trôi, Bánh Trôi Nước - List Nhạc Acoustic Nhẹ Nhàng Bạn Nên Nghe Thử",
+    name: "Mơ, Giấc Mơ Trưa, Bèo Dạt Mây Trôi, Bánh Trôi Nước - List Nhạc Acoustic Nhẹ Nhàng Bạn Nên Nghe Thử",
+    artist: "Bài Hát Yêu Thích - MUSIC",
+    url: "https://www.youtube.com/watch?v=0U3fc5djDUc",
+  },
+  {
+    id: "playlist-nh-ng-b-i-h-t-acoustic-gi-p-b-n-c-m-th-y-y-u-i",
+    title: "Playlist ♫ Những bài hát acoustic giúp bạn cảm thấy yêu đời",
+    name: "Playlist ♫ Những bài hát acoustic giúp bạn cảm thấy yêu đời",
+    artist: "nhaccuala",
+    url: "https://www.youtube.com/watch?v=OPv9H3Y4i60",
+  },
+  {
+    id: "playlist-1-gio-nhu-ng-ba-n-cover-nha-c-vie-t-hay-nha-t-anh-t-tr-c-nh-n-ho-ng-d-ng-lyly",
+    title:
+      "(Playlist 1 Giờ) Những bản cover nhạc Việt hay nhất | Anh Tú, Trúc Nhân, Hoàng Dũng, LyLy",
+    name: "(Playlist 1 Giờ) Những bản cover nhạc Việt hay nhất | Anh Tú, Trúc Nhân, Hoàng Dũng, LyLy",
+    artist: "Nghe Này Nghe Kia",
+    url: "https://www.youtube.com/watch?v=CFXBL5WDN3o",
+  },
+  {
+    id: "nh-ng-ng-y-r-t-th-playlist-nh-c-chill-vi-t-ch-a-l-nh-cho-t-m-h-n-nh-c-lofi-chill-hot-tiktok",
+    title:
+      "🌿 Những Ngày Rất Thơ | Playlist Nhạc Chill Việt & Chữa Lành Cho Tâm Hồn| Nhạc Lofi Chill Hot Tiktok",
+    name: "🌿 Những Ngày Rất Thơ | Playlist Nhạc Chill Việt & Chữa Lành Cho Tâm Hồn| Nhạc Lofi Chill Hot Tiktok",
+    artist: "Dino’s Music – Nhà Của Gió",
+    url: "https://www.youtube.com/watch?v=Tc0w09BXiTA",
+  },
+];
+
 export const PLAYLIST_THEMES = [
   {
     name: "Short Love",
@@ -799,6 +1324,11 @@ export const PLAYLIST_THEMES = [
   { name: "Sadness", data: SadnessPlaylist, videosPlaylistName: "Sadness" },
   { name: "Working", data: WorkingPlaylist, videosPlaylistName: "Work" },
   { name: "Sleep", data: SleepPlaylist, videosPlaylistName: "Sleep" },
+  {
+    name: "Vietnamese_Acoustic",
+    data: VietnameseAcoustic,
+    videosPlaylistName: "Relax",
+  },
 ];
 
 export const getRandomPlaylist = () => {
