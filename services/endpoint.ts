@@ -10,10 +10,12 @@ export default {
   update_room: "/api/room/update",
   delete_room: "/api/room/delete",
   join_room: "/api/room/join-room",
+  add_current_room: "/api/room/add-current",
+  check_current_room: "/api/room/check-current",
   leave_room: "/api/room/leave-room",
   kick_member: "/api/room/kick-member",
 
   // music
   stream_music: "/api/music/stream",
   get_yt_info: "/api/music/get-info",
-}
+};
