@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { generateUser } from "@/services/api/createUser.api";
 import { createContext, useContext, useEffect, useState } from "react";
 import { UsernameModal } from "./username-modal";
@@ -25,9 +27,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isHaveCurrent, setIsHaveCurrent] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const storedId = localStorage.getItem("user_id");
       const storedToken = localStorage.getItem("auth_token");
       if (storedId) {
@@ -42,7 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const init = async () => {
       try {
-        const currentRoom = typeof window !== 'undefined' ? localStorage.getItem("current_room") : null;
+        const currentRoom =
+          typeof window !== "undefined"
+            ? localStorage.getItem("current_room")
+            : null;
 
         if (currentRoom) {
           setIsHaveCurrent(true);
@@ -60,8 +66,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               memberCount: check.members?.length ?? 0,
             };
             if (check) {
-              if (typeof window !== 'undefined') {
-                localStorage.setItem("current_room", JSON.stringify(newRoomData));
+              if (typeof window !== "undefined") {
+                localStorage.setItem(
+                  "current_room",
+                  JSON.stringify(newRoomData)
+                );
               }
               setIsHaveCurrent(true);
             }
@@ -71,6 +80,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Cannot check current room:", err);
       } finally {
         setChecked(true);
+        if (!authToken) {
+          const hasVisited =
+            typeof window !== "undefined"
+              ? localStorage.getItem("hasVisitedBefore")
+              : null;
+          if (hasVisited) {
+            setShowUsernameModal(true);
+          } else {
+            setTimeout(() => {
+              setShowUsernameModal(true);
+            }, 500);
+          }
+        }
       }
     };
 
@@ -78,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [userId, authToken]);
 
   function logout() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.removeItem("auth_token");
     }
     setUser(null);
@@ -90,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{ logout }}>
       {children}
-      {!authToken && (
+      {!authToken && showUsernameModal && (
         <UsernameModal
           onSubmit={async (username) => {
             const genUser = await generateUser(username);
@@ -98,12 +120,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               console.log("Error when creating user!");
               return;
             }
-            if (typeof window !== 'undefined') {
+            if (typeof window !== "undefined") {
               localStorage.setItem("user_id", genUser.id);
               localStorage.setItem("auth_token", genUser.token);
             }
             setAuthToken(genUser.token);
             setUserId(genUser.id);
+            setShowUsernameModal(false);
           }}
           forceOpen
         />
