@@ -18,7 +18,7 @@ export function PomodoroTimer({ onNotification }: PomodoroTimerProps) {
   const [sessions, setSessions] = useState(0)
   const [customMinutes, setCustomMinutes] = useState("25")
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const intervalRef = useRef<number | null>(null)
 
   const modeSettings = {
     work: { duration: 25, label: "Focus Time", icon: Target, color: "text-amber-600" },
