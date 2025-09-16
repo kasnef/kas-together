@@ -8,7 +8,7 @@ import { checkCurrentRoom } from "@/services/api/checkCurrentRoom.api";
 type User = { id: string; username: string } | null;
 
 interface AuthContextType {
-  userToken: string;
+  userToken: string | null;
   setUser: (user: User | null) => void;
   logout: () => void;
 }
@@ -24,24 +24,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [checked, setChecked] = useState(false);
   const [isHaveCurrent, setIsHaveCurrent] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedId = localStorage.getItem("user_id");
-    if (storedId) {
-      setUserId(storedId);
+    if (typeof window !== 'undefined') {
+      const storedId = localStorage.getItem("user_id");
+      const storedToken = localStorage.getItem("auth_token");
+      if (storedId) {
+        setUserId(storedId);
+      }
+      if (storedToken) {
+        setAuthToken(storedToken);
+      }
     }
   }, []);
 
   useEffect(() => {
     const init = async () => {
       try {
-        const currentRoom = localStorage.getItem("current_room");
+        const currentRoom = typeof window !== 'undefined' ? localStorage.getItem("current_room") : null;
 
         if (currentRoom) {
           setIsHaveCurrent(true);
         } else {
-          const token = localStorage.getItem("auth_token");
-          if (token && userId) {
+          if (authToken && userId) {
             const check = await checkCurrentRoom(userId);
             const newRoomData = {
               room_id: check.room.id,
@@ -54,7 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               memberCount: check.members?.length ?? 0,
             };
             if (check) {
-              localStorage.setItem("current_room", JSON.stringify(newRoomData));
+              if (typeof window !== 'undefined') {
+                localStorage.setItem("current_room", JSON.stringify(newRoomData));
+              }
               setIsHaveCurrent(true);
             }
           }
@@ -67,13 +75,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     init();
-  }, [userId]);
-
-  useEffect(() => {});
+  }, [userId, authToken]);
 
   function logout() {
-    localStorage.removeItem("auth_token");
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("auth_token");
+    }
     setUser(null);
+    setAuthToken(null);
   }
 
   if (!checked) return null;
@@ -81,15 +90,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{ logout }}>
       {children}
-      {!localStorage.getItem("auth_token") && (
+      {!authToken && (
         <UsernameModal
           onSubmit={async (username) => {
             const genUser = await generateUser(username);
             if (!genUser) {
               console.log("Error when creating user!");
+              return;
             }
-            localStorage.setItem("user_id", genUser?.id);
-            localStorage.setItem("auth_token", genUser?.token);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem("user_id", genUser.id);
+              localStorage.setItem("auth_token", genUser.token);
+            }
+            setAuthToken(genUser.token);
+            setUserId(genUser.id);
           }}
           forceOpen
         />
