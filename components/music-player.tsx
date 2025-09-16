@@ -291,17 +291,34 @@ export function MusicPlayer({ onTrackChange }: MusicPlayerProps) {
 
   const handleNextTrack = () => {
     if (isInRoom) {
-      if (!isOwner || !emitters || playlistToUse.length === 0) return;
-      const nextIndex = (currentIndexToUse + 1) % playlistToUse.length;
+      if (!isOwner || !emitters || playlist.length === 0) return;
+      const nextIndex = (currentIndex + 1) % playlist.length;
       emitters.requestStateChange({
         currentTrackIndex: nextIndex,
         isPlaying: true,
         timestamp: 0,
       });
     } else {
-      if (localPlaylist.length === 0) return;
-      setLocalCurrentIndex((prev) => (prev + 1) % localPlaylist.length);
-      setLocalIsPlaying(true);
+      if (playlist.length === 0) return;
+
+      let nextIndex = (currentIndex + 1) % playlist.length;
+      if (isShuffled) {
+        // Tạo một index ngẫu nhiên khác với index hiện tại (nếu có thể)
+        if (playlist.length > 1) {
+          let newIndex;
+          do {
+            newIndex = Math.floor(Math.random() * playlist.length);
+          } while (newIndex === currentIndex);
+          nextIndex = newIndex;
+        } else {
+          nextIndex = 0;
+        }
+      }
+
+      // Cập nhật tất cả các state local cần thiết
+      setCurrentIndex(nextIndex);
+      setCurrentTrack(playlist[nextIndex]);
+      setIsPlaying(true);
     }
   };
 

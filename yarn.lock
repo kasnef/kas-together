@@ -2879,6 +2879,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"emoji-picker-react@npm:^4.13.3":
+  version: 4.13.3
+  resolution: "emoji-picker-react@npm:4.13.3"
+  dependencies:
+    flairup: "npm:1.0.0"
+  peerDependencies:
+    react: ">=16"
+  checksum: 10c0/897d7369609a0d0d66acd9f57d9a7c18cbaa733ac10d1aae16d127b120933eb740e8baf50f73797a755a38a8270f85593c1012b442324fdff0f31badfc5c6f08
+  languageName: node
+  linkType: hard
+
 "engine.io-client@npm:~6.6.1":
   version: 6.6.3
   resolution: "engine.io-client@npm:6.6.3"
@@ -2992,6 +3003,13 @@ __metadata:
   version: 5.2.2
   resolution: "fast-equals@npm:5.2.2"
   checksum: 10c0/2bfeac6317a8959a00e2134749323557e5df6dea3af24e4457297733eace8ce4313fcbca2cf4532f3a6792607461e80442cd8d3af148d5c2e4e98ad996d6e5b5
+  languageName: node
+  linkType: hard
+
+"flairup@npm:1.0.0":
+  version: 1.0.0
+  resolution: "flairup@npm:1.0.0"
+  checksum: 10c0/2d9fe1f1c890383be65ae0ec95d57b96f3ff42eecffaf493f8a39f09f4982e12109a865e79baca051e784919eecd72fa6cf620cfae8a4663b98deaa6d883d7ba
   languageName: node
   linkType: hard
 
@@ -3441,6 +3459,7 @@ __metadata:
     date-fns: "npm:4.1.0"
     date-fns-tz: "npm:^3.2.0"
     embla-carousel-react: "npm:8.5.1"
+    emoji-picker-react: "npm:^4.13.3"
     geist: "npm:latest"
     input-otp: "npm:1.4.1"
     lucide-react: "npm:^0.454.0"
