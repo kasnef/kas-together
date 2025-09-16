@@ -33,11 +33,11 @@ export const useCreateRoom = () => {
       return res as any;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ 
-        queryKey: ["room", 0, 10]
+      queryClient.invalidateQueries({
+        predicate: (query) => query.queryKey[0] === "room",
       });
     },
-    onError: () => {}
+    onError: () => {},
   });
 
   return {

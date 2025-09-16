@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -24,17 +24,20 @@ import {
   ChevronRight,
   Crown,
 } from "lucide-react";
+import Error from "next/error";
+import EmojiPicker from "emoji-picker-react";
 import { useRoomPagination } from "@/hooks/room/useRoomPagination";
 import { Helper } from "@/utils/helper";
 import { useRoomDetailMutation } from "@/hooks/room/useRoomDetail";
 import { useLeaveRoom } from "@/hooks/room/useLeaveRoom";
 import { useJoinRoom } from "@/hooks/room/useJoinRoom";
-import Error from "next/error";
 import LoadingScreen from "./ui/loading";
 import { useCreateRoom } from "@/hooks/room/useCreateRoom";
 import { useRoomSocket } from "@/hooks/chat/useRoomSocket";
 import { useRoomMusicStore } from "@/store/useMusicStore";
 import { useRoomMusicSync } from "@/hooks/room/useRoomSync";
+import { useAddCurrentRoom } from "@/hooks/room/useAddCurrentRoom";
+import { useRoomEvents, type NotificationType } from "@/hooks/room/useRoomEvent";
 
 export type RoomType = "PUBLIC" | "PRIVATE";
 
@@ -79,7 +82,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   const [rooms, setRooms] = useState<CreateRoom[]>([]);
   const [notification, setNotification] = useState<{
     isOpen: boolean;
-    type: "success" | "error" | "info";
+    type: "success" | "error" | "info" | "warning";
     title: string;
     message: string;
   }>({
@@ -90,6 +93,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   });
 
   const [newMessage, setNewMessage] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
   const [roomName, setRoomName] = useState("");
   const [roomDescription, setRoomDescription] = useState("");
   const [roomType, setRoomType] = useState<RoomType>("PUBLIC");
@@ -105,12 +109,27 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   const [isLocked, setIsLocked] = useState(false);
   const [lockEndTime, setLockEndTime] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
 
   const userToken = localStorage.getItem("auth_token");
   const userId = localStorage.getItem("user_id");
   const userLocalTime = Helper.getNowTz();
 
+  const showNotification = (
+    type: NotificationType,
+    title: string,
+    message: string
+  ) => {
+    setNotification({
+      isOpen: true,
+      type,
+      title,
+      message,
+    });
+  };
+
   useRoomMusicSync(currentRoom?.room_id || null, userId || null);
+  useRoomEvents(userId, setCurrentRoom, showNotification);
 
   const { messages, sendMessage } = useRoomSocket(
     currentRoom?.room_id || "",
@@ -137,6 +156,10 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
 
   // #region handle join room
   const { onJoinRoom } = useJoinRoom();
+  // #endregion
+
+  // #region handle add current room
+  const { onAddCurrentRoom } = useAddCurrentRoom();
   // #endregion
 
   // #region handle leave room
@@ -194,14 +217,37 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
           room_id: res.data.room.id,
           room_name: res.data.room.name,
           room_description: res.data.room.description,
-          room_type: res.data.room.room_type,
+          room_type: res.data.room.type,
           room_password: res.data.room.password ?? null,
           room_createdAt: res.data.room.createdAt ?? "",
           room_ownerId: res.data.room.ownerId ?? "",
           memberCount: res.data.members.length,
         };
-        setCurrentRoom(newRoomData);
 
+        const addRes = await onAddCurrentRoom({
+          userId: userId || "",
+          joinedAt: userLocalTime,
+          dto: newRoomData,
+        });
+
+        const currentRoomWithOwnerId = {
+          ...addRes.data,
+          room_ownerId: addRes.data.room?.owner?.id ?? "",
+        };
+
+        const formattedRoom = {
+          room_id: currentRoomWithOwnerId.room.id,
+          room_name: currentRoomWithOwnerId.room.name,
+          room_description: currentRoomWithOwnerId.room.description,
+          room_type: currentRoomWithOwnerId.room.type,
+          room_password: currentRoomWithOwnerId.room.password ?? null,
+          room_createdAt: currentRoomWithOwnerId.room.createdAt,
+          room_ownerId: currentRoomWithOwnerId.room.owner?.id ?? "",
+          memberCount: res.data.members.length,
+        };
+
+        setCurrentRoom(formattedRoom);
+        localStorage.setItem("current_room", JSON.stringify(formattedRoom));
         setRooms([...rooms, newRoom]);
         setRoomName("");
         setRoomDescription("");
@@ -293,8 +339,13 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
       });
 
       if (res.status === 201) {
-        localStorage.setItem("current_room", JSON.stringify(room));
         setCurrentRoom(room);
+        await onAddCurrentRoom({
+          userId: userId || "",
+          joinedAt: userLocalTime,
+          dto: room,
+        });
+        localStorage.setItem("current_room", JSON.stringify(room));
         setNotification({
           isOpen: true,
           type: "success",
@@ -429,6 +480,10 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
     }
   };
 
+  const handleEmojiClick = (emoji: any) => {
+    setNewMessage((prev) => prev + emoji.emoji);
+  };
+
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     sendMessage(newMessage, userLocalTime);
@@ -440,21 +495,6 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
     fromUser: "",
     toUser: "",
   });
-  const [autoMemeEnabled, setAutoMemeEnabled] = useState(false);
-
-  const handleSendMeme = () => {
-    if (currentRoom) {
-      const memes = ["😂", "🎵", "☕", "🌙", "✨", "🎧", "💻", "🔥"];
-      const randomMeme = memes[Math.floor(Math.random() * memes.length)];
-      const message: Message = {
-        id: Date.now().toString(),
-        user: "You",
-        content: randomMeme,
-        timestamp: new Date(),
-        type: "meme",
-      };
-    }
-  };
 
   const handleAutoMeme = () => {
     if (currentRoom) {
@@ -512,6 +552,27 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
       }
     }
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        pickerRef.current &&
+        !pickerRef.current.contains(event.target as Node)
+      ) {
+        setShowEmoji(false);
+      }
+    };
+
+    if (showEmoji) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmoji]);
 
   useEffect(() => {
     const fetchRoomDetail = async () => {
@@ -574,15 +635,6 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
 
             <div className="flex items-center gap-2">
               <Button
-                variant={autoMemeEnabled ? "default" : "outline"}
-                size="sm"
-                onClick={() => setAutoMemeEnabled(!autoMemeEnabled)}
-                className="gap-1"
-              >
-                <Zap className="h-3 w-3" />
-                <p className="text-lg">Auto Meme</p>
-              </Button>
-              <Button
                 onClick={handleAutoMeme}
                 size="sm"
                 variant="outline"
@@ -629,12 +681,24 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               className="flex-1"
             />
-            <Button onClick={handleSendMeme} variant="outline" size="icon">
+            <Button
+              onClick={() => setShowEmoji((prev) => !prev)}
+              variant="outline"
+              size="icon"
+            >
               <Smile className="h-5 w-5" />
             </Button>
             <Button onClick={handleSendMessage} size="icon">
               <Send className="h-4 w-4" />
             </Button>
+            {showEmoji && (
+              <div
+                ref={pickerRef}
+                className="absolute bottom-12 right-4 z-50 shadow-lg"
+              >
+                <EmojiPicker onEmojiClick={handleEmojiClick} />
+              </div>
+            )}
           </div>
         </Card>
 
