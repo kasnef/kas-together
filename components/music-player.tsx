@@ -66,7 +66,6 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
       const len = initialPlaylist?.playlist?.length || 0;
       if (len > 0) {
         const randomIndex = Math.floor(Math.random() * len);
-        console.log(`Random song index: ${randomIndex}/${len - 1}`); // Debug log
         return randomIndex;
       }
       return 0;
@@ -74,8 +73,13 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
 
     const playlist = isInRoom ? syncedPlaylist : localPlaylist;
     const isPlaying = isInRoom ? syncedIsPlaying : localIsPlaying;
+    // Always use synced state for currentIndex in room mode
     const currentIndex = isInRoom ? syncedCurrentIndex : localCurrentIndex;
     const currentTrack = playlist[currentIndex] || null;
+
+    // Debug logging for room sync
+    if (isInRoom) {
+    }
 
     const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -115,18 +119,23 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
       }
     }, [autoStartForFirstTime, hasUserTracks, initialPlaylist.playlist]);
 
+    // Sync state from server to local state
     useEffect(() => {
-      if (isInRoom && !isOwner && audioRef.current) {
-        const audio = audioRef.current;
-
-        // Sync playlist if different
+      if (isInRoom) {
+        // Always sync playlist from server
         if (JSON.stringify(localPlaylist) !== JSON.stringify(syncedPlaylist)) {
           setLocalPlaylist(syncedPlaylist);
         }
 
-        const timeDiff = Math.abs(audio.currentTime - syncedTimestamp);
-        if (timeDiff > 1.0) {
-          audio.currentTime = syncedTimestamp;
+        // For members, always sync from server
+        // For owner, sync only when not actively changing
+        if (!isOwner) {
+          if (syncedCurrentIndex !== localCurrentIndex) {
+            setLocalCurrentIndex(syncedCurrentIndex);
+          }
+          if (syncedIsPlaying !== localIsPlaying) {
+            setLocalIsPlaying(syncedIsPlaying);
+          }
         }
       }
     }, [
@@ -135,8 +144,22 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
       syncedPlaylist,
       syncedCurrentIndex,
       syncedIsPlaying,
-      syncedTimestamp,
+      localPlaylist,
+      localCurrentIndex,
+      localIsPlaying,
     ]);
+
+    // Sync timestamp for non-owners only
+    useEffect(() => {
+      if (isInRoom && !isOwner && audioRef.current) {
+        const audio = audioRef.current;
+        const timeDiff = Math.abs(audio.currentTime - syncedTimestamp);
+        if (timeDiff > 1.0) {
+          audio.currentTime = syncedTimestamp;
+        }
+      }
+    }, [isInRoom, isOwner, syncedTimestamp]);
+
 
     useEffect(() => {
       const audio = audioRef.current;
@@ -235,11 +258,19 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
 
     const handlePlayPause = () => {
       if (isInRoom) {
+        // Only owner can control music in room
         if (!isOwner || !emitters || !audioRef.current) {
+          console.log("Member cannot control music in room");
           return;
         }
+
+        // Update local state immediately for owner
+        setLocalIsPlaying(!localIsPlaying);
+
+        // Then sync with server
+        console.log("Owner changing play state:", !localIsPlaying);
         emitters.requestStateChange({
-          isPlaying: !syncedIsPlaying,
+          isPlaying: !localIsPlaying,
           timestamp: audioRef.current.currentTime,
         });
       } else {
@@ -263,17 +294,25 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
 
     const handleNextTrack = () => {
       if (isInRoom) {
+        // Only owner can control music in room
         if (!isOwner || !emitters || playlist.length === 0) {
+          console.log("Member cannot control music in room");
           return;
         }
 
-        let nextIndex = (syncedCurrentIndex + 1) % playlist.length;
+        let nextIndex = (currentIndex + 1) % playlist.length;
         if (isShuffled && playlist.length > 1) {
           do {
             nextIndex = Math.floor(Math.random() * playlist.length);
-          } while (nextIndex === syncedCurrentIndex);
+          } while (nextIndex === currentIndex);
         }
 
+        // Update local state immediately for owner
+        setLocalCurrentIndex(nextIndex);
+        setLocalIsPlaying(true);
+
+        // Then sync with server
+        console.log("Owner changing track to:", nextIndex);
         emitters.requestStateChange({
           currentTrackIndex: nextIndex,
           isPlaying: true,
@@ -298,18 +337,25 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
       if (playlist.length === 0) return;
 
       if (isInRoom) {
-        if (!isOwner || !emitters) return;
+        // Only owner can control music in room
+        if (!isOwner || !emitters) {
+          console.log("Member cannot control music in room");
+          return;
+        }
 
         let prevIndex =
-          syncedCurrentIndex === 0
-            ? playlist.length - 1
-            : syncedCurrentIndex - 1;
+          currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
         if (isShuffled && playlist.length > 1) {
           do {
             prevIndex = Math.floor(Math.random() * playlist.length);
-          } while (prevIndex === syncedCurrentIndex);
+          } while (prevIndex === currentIndex);
         }
 
+        // Update local state immediately for owner
+        setLocalCurrentIndex(prevIndex);
+        setLocalIsPlaying(true);
+
+        // Then sync with server
         emitters.requestStateChange({
           currentTrackIndex: prevIndex,
           isPlaying: true,
@@ -577,7 +623,8 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
                 variant="ghost"
                 size="sm"
                 onClick={handlePreviousTrack}
-                className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300"
+                disabled={isInRoom && !isOwner}
+                className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <SkipBack className="h-3 w-3" />
               </Button>
@@ -585,8 +632,8 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
               <Button
                 size="sm"
                 onClick={handlePlayPause}
-                disabled={!currentTrack}
-                className="h-8 w-8 p-0 bg-amber-500 hover:bg-amber-600 text-white"
+                disabled={!currentTrack || (isInRoom && !isOwner)}
+                className="h-8 w-8 p-0 bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPlaying ? (
                   <Pause className="h-4 w-4" />
@@ -599,7 +646,8 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
                 variant="ghost"
                 size="sm"
                 onClick={handleNextTrack}
-                className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300"
+                disabled={isInRoom && !isOwner}
+                className="h-8 w-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <SkipForward className="h-3 w-3" />
               </Button>
@@ -686,20 +734,31 @@ export const MusicPlayer = forwardRef<any, MusicPlayerProps>(
               {playlist.map((track, index) => (
                 <div
                   key={track.id}
-                  className={`flex items-center justify-between p-3 rounded-lg text-sm cursor-pointer transition-all hover:bg-amber-100/70 dark:hover:bg-amber-900/70 ${
+                  className={`flex items-center justify-between p-3 rounded-lg text-sm transition-all ${
+                    isInRoom && !isOwner
+                      ? "cursor-not-allowed opacity-50"
+                      : "cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-900/70"
+                  } ${
                     currentTrack?.id === track.id
                       ? "bg-amber-200/70 dark:bg-amber-800/70 ring-1 ring-amber-400/50"
                       : "bg-white/30 dark:bg-black/20"
                   }`}
                   onClick={() => {
                     if (isInRoom) {
+                      // Only owner can select tracks in room
                       if (isOwner && emitters) {
+                        // Update local state immediately for owner
+                        setLocalCurrentIndex(index);
+                        setLocalIsPlaying(true);
+
+                        // Then sync with server
                         emitters.requestStateChange({
                           currentTrackIndex: index,
                           isPlaying: true,
                           timestamp: 0,
                         });
                       }
+                      // Do nothing for members - they cannot select tracks
                     } else {
                       setLocalCurrentIndex(index);
                       setLocalIsPlaying(true);

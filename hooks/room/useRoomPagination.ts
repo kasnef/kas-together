@@ -20,7 +20,7 @@ export const useRoomPagination = (skip: number = 0, take: number = 10) => {
       const res = await rootApi.get(url);
       return res.data.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });

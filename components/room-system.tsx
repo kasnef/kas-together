@@ -29,15 +29,15 @@ import Error from "next/error";
 import EmojiPicker from "emoji-picker-react";
 import { useRoomPagination } from "@/hooks/room/useRoomPagination";
 import { Helper } from "@/utils/helper";
-import { useRoomDetailMutation } from "@/hooks/room/useRoomDetail";
+import { useRoomDetailMutation, useRoomDetailQuery } from "@/hooks/room/useRoomDetail";
 import { useLeaveRoom } from "@/hooks/room/useLeaveRoom";
 import { useJoinRoom } from "@/hooks/room/useJoinRoom";
 import LoadingScreen from "./ui/loading";
 import { useCreateRoom } from "@/hooks/room/useCreateRoom";
 import { useRoomSocket } from "@/hooks/chat/useRoomSocket";
-import { useRoomMusicStore } from "@/store/useMusicStore";
 import { useRoomMusicSync } from "@/hooks/room/useRoomSync";
 import { useAddCurrentRoom } from "@/hooks/room/useAddCurrentRoom";
+import { useRoomMusicStore } from "@/store/useMusicStore";
 import {
   useRoomEvents,
   type NotificationType,
@@ -135,6 +135,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   const [lockEndTime, setLockEndTime] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [isSoundSettingsOpen, setIsSoundSettingsOpen] = useState(false);
   const [sendSoundId, setSendSoundId] = useState<string | null>(null);
@@ -168,6 +169,8 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
 
   useRoomMusicSync(currentRoom?.room_id || null, userId || null);
   useRoomEvents(userId, setCurrentRoom, showNotification);
+  
+  const { currentTrack } = useRoomMusicStore();
 
   const { messages, sendMessage } = useRoomSocket(
     currentRoom?.room_id || "",
@@ -202,6 +205,13 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
     } catch {}
   }, [messages, receiveSoundId, userId, userToken]);
 
+  // Auto scroll to bottom on new messages
+  useEffect(() => {
+    try {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    } catch {}
+  }, [messages]);
+
   // #region handle pagination
   const roomsPerPage = 10;
   const skip = (currentPage - 1) * roomsPerPage;
@@ -213,6 +223,10 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
 
   // #region handle detail room
   const { data: detailData, onDetailRoom } = useRoomDetailMutation();
+  const { data: roomDetailData, isLoading: roomDetailLoading } = useRoomDetailQuery(
+    userToken,
+    currentRoom?.room_id || null
+  );
   // #endregion
 
   // #region handle create room
@@ -310,8 +324,6 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
           room_ownerId: currentRoomWithOwnerId.room.owner?.id ?? "",
           memberCount: res.data.members.length,
         };
-
-        console.log('formattedRoom===> ', formattedRoom)
 
         setCurrentRoom(formattedRoom);
         localStorage.setItem("current_room", JSON.stringify(formattedRoom));
@@ -555,7 +567,6 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
     if (!newMessage.trim()) return;
     sendMessage(newMessage, userLocalTime);
     setNewMessage("");
-    // Play send sound
     const url = findSoundUrlById(messageSendSounds, sendSoundId);
     playSound(url);
   };
@@ -644,19 +655,12 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
     };
   }, [showEmoji]);
 
+  // Room detail is now handled by useRoomDetailQuery hook
   useEffect(() => {
-    const fetchRoomDetail = async () => {
-      if (currentRoom && userToken) {
-        await onDetailRoom({
-          token: userToken,
-          roomId: currentRoom.room_id,
-          dto: {},
-        });
-        setIsLoading(false);
-      }
-    };
-    fetchRoomDetail();
-  }, [currentRoom, userToken, onDetailRoom]);
+    if (currentRoom) {
+      setIsLoading(false);
+    }
+  }, [currentRoom]);
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -669,10 +673,10 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
         <div className="text-2xl flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-card-foreground">
-              {detailData?.name}
+              {roomDetailData?.name || detailData?.name}
             </h3>
             <p className="text-lg text-muted-foreground">
-              {detailData?.description}
+              {roomDetailData?.description || detailData?.description}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -731,7 +735,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
             <Button
               className="cursor-pointer"
               variant="outline"
-              onClick={() => handleLeaveRoom(detailData?.id)}
+              onClick={() => handleLeaveRoom(roomDetailData?.id || detailData?.id)}
             >
               <p className="text-lg">Leave Room</p>
             </Button>
@@ -742,7 +746,19 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
         <Card className="p-3 bg-primary/10">
           <div className="flex items-center gap-2">
             <Music className="h-4 w-4 text-primary" />
-            <span className="text-lg font-medium">Now Playing:</span>
+            <span className="text-lg font-medium">Now Playing: </span>
+            {currentTrack ? (
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold text-primary">
+                  {Helper.truncate(currentTrack.title, 60)}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  by {currentTrack.artist}
+                </span>
+              </div>
+            ) : (
+              <span className="text-sm text-muted-foreground">No song playing</span>
+            )}
           </div>
         </Card>
 
@@ -753,7 +769,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
               <MessageCircle className="h-5 w-5" />
               <span className="text-lg font-medium">Chat</span>
               <Badge variant="secondary" className="text-sm">
-                {detailData?.members.length} users
+                {roomDetailData?.members?.length || detailData?.members?.length || 0} users
               </Badge>
             </div>
 
@@ -794,6 +810,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
                   </div>
                 );
               })}
+              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
 
@@ -833,7 +850,7 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
             Online Users
           </h4>
           <div className="flex flex-wrap gap-2">
-            {detailData?.members.map((member: any) => (
+            {(roomDetailData?.members)?.map((member: any) => (
               <Badge
                 key={member.id}
                 variant="secondary"

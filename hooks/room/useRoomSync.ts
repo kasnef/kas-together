@@ -23,16 +23,21 @@ export const useRoomMusicSync = (
   useEffect(() => {
     handleStateUpdateRef.current = (stateFromServer: any) => {
       console.log(
-        "[v0] CLIENT: Handler is executing with latest state. Received:",
+        "CLIENT: Received music state from server:",
         stateFromServer
       );
+      const playlist = stateFromServer.playlist || [];
+      const currentIndex = stateFromServer.currentTrackIndex || 0;
+      const currentTrack = playlist[currentIndex] || null;
+      
       setRoomSyncState({
-        syncedPlaylist: stateFromServer.playlist || [],
-        syncedCurrentIndex: stateFromServer.currentIndex || 0,
+        syncedPlaylist: playlist,
+        syncedCurrentIndex: currentIndex,
         syncedIsPlaying: stateFromServer.isPlaying || false,
         syncedTimestamp: stateFromServer.timestamp || 0,
         isOwner: stateFromServer.ownerId === userId,
         isInRoom: true,
+        currentTrack: currentTrack,
       });
     };
   }, [userId, setRoomSyncState]);
@@ -48,19 +53,19 @@ export const useRoomMusicSync = (
 
     const emitters = {
       requestStateChange: (state: any) => {
-        console.log("[v0] CLIENT: Requesting state change:", state);
+        // console.log("CLIENT: Requesting state change:", state);
         if (socket.connected) {
           socket.emit("music:sync_state", { roomId, userId, state });
         } else {
-          console.error("[v0] CLIENT: Socket not connected, cannot sync state");
+          // console.error("CLIENT: Socket not connected, cannot sync state");
         }
       },
       requestAddTrack: (track: Song, clearDefault: boolean) => {
-        console.log("[v0] CLIENT: Requesting to add track:", track);
+        // console.log("CLIENT: Requesting to add track:", track);
         if (socket.connected) {
           socket.emit("music:add_track", { roomId, track, clearDefault });
         } else {
-          console.error("[v0] CLIENT: Socket not connected, cannot add track");
+          // console.error("CLIENT: Socket not connected, cannot add track");
         }
       },
     };
@@ -71,16 +76,16 @@ export const useRoomMusicSync = (
     };
 
     const handleConnect = () => {
-      console.log("[v0] CLIENT: Socket connected, requesting initial state");
+      // console.log("CLIENT: Socket connected, requesting initial state");
       socket.emit("music:get_initial_state", { roomId, userId });
     };
 
     const handleDisconnect = () => {
-      console.log("[v0] CLIENT: Socket disconnected");
+      // console.log("CLIENT: Socket disconnected");
     };
 
     const handleConnectError = (error: any) => {
-      console.error("[v0] CLIENT: Socket connection error:", error);
+      // console.error("CLIENT: Socket connection error:", error);
     };
 
     socket.on("connect", handleConnect);
@@ -94,7 +99,7 @@ export const useRoomMusicSync = (
     }
 
     return () => {
-      console.log("[v0] CLIENT: Cleaning up music listeners.");
+      // console.log("CLIENT: Cleaning up music listeners.");
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("connect_error", handleConnectError);
