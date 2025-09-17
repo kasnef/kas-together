@@ -1,13 +1,13 @@
-import type React from "react";
-import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
-import { Press_Start_2P, VT323 } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
+import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/next";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
+import type { Metadata } from "next";
+import { VT323 } from "next/font/google";
+import type React from "react";
 import { Suspense } from "react";
 import "./globals.css";
-import { AuthProvider } from "@/components/AuthProvider";
 import { Providers } from "./provider";
 
 const VT323P = VT323({
