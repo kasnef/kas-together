@@ -30,12 +30,10 @@ export function useRoomSocket(roomId: string, userId: string, token: string) {
 
     // --- NEW: Music Listeners ---
     socket.on("music:state_update", (state) => {
-      console.log("Received music state update:", state);
       setMusicState(state);
     });
 
     socket.on("music:playlist_update", ({ playlist }) => {
-      console.log("Received playlist update:", playlist);
       setMusicState((prev) => (prev ? { ...prev, playlist } : null));
     });
 
@@ -70,13 +68,11 @@ export function useRoomSocket(roomId: string, userId: string, token: string) {
     timestamp: number;
   }) => {
     if (!roomId || !userId) return;
-    console.log("Syncing music state:", state);
     socket.emit("music:sync_state", { roomId, userId, state });
   };
 
   const addTrackToRoom = (track: any, clearDefault: boolean) => {
     if (!roomId) return;
-    console.log(`Adding track to room ${roomId}:`, track);
     socket.emit("music:add_track", { roomId, track, clearDefault });
   };
 

@@ -1,7 +1,6 @@
 import endpoint from "../endpoint";
 
 export async function checkCurrentRoom(userId: string): Promise<any> {
-  console.log("userId in api call ===> ", userId)
   const baseUrl = process.env.NEXT_PUBLIC_DEV_API_URL;
   if (!baseUrl) {
     throw new Error("API URL is not defined");
