@@ -9,7 +9,7 @@ import { MusicPlayer } from "@/components/music-player"
 import { UnifiedMenu } from "@/components/unified-menu"
 import { RoomSystem, type Room } from "@/components/room-system"
 import { TaskManager } from "@/components/task-manager"
-import { Play, Users, CheckSquare, Coffee, Github, Send, Linkedin, HandCoins } from "lucide-react"
+import { Play, Users, CheckSquare, Coffee, Github, Send, Linkedin, HandCoins, Bug } from "lucide-react"
 import type { Song } from "@/data/music-playlist"
 
 export default function HomePage() {
@@ -156,6 +156,21 @@ export default function HomePage() {
                     title="Support me"
                   >
                     <HandCoins className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button
+                  className="cursor-pointer text-primary hover:text-primary-foreground"
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                >
+                  <a
+                    href="https://m.me/j/AbZMZlYK42uz17mG/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Report bug"
+                  >
+                    <Bug className="h-4 w-4" />
                   </a>
                 </Button>
               </div>

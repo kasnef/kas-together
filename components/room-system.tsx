@@ -23,6 +23,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
+  Settings,
 } from "lucide-react";
 import Error from "next/error";
 import EmojiPicker from "emoji-picker-react";
@@ -41,6 +42,27 @@ import {
   useRoomEvents,
   type NotificationType,
 } from "@/hooks/room/useRoomEvent";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  messageReceiveSounds,
+  messageSendSounds,
+  DEFAULT_RECEIVE_SOUND_ID,
+  DEFAULT_SEND_SOUND_ID,
+  findSoundUrlById,
+} from "@/utils/chatSounds";
 
 export type RoomType = "PUBLIC" | "PRIVATE";
 
@@ -114,9 +136,22 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
   const [isLoading, setIsLoading] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
+  const [isSoundSettingsOpen, setIsSoundSettingsOpen] = useState(false);
+  const [sendSoundId, setSendSoundId] = useState<string | null>(null);
+  const [receiveSoundId, setReceiveSoundId] = useState<string | null>(null);
+
   const userToken = localStorage.getItem("auth_token");
   const userId = localStorage.getItem("user_id");
   const userLocalTime = Helper.getNowTz();
+
+  const playSound = (url: string | null) => {
+    if (!url) return;
+    try {
+      const audio = new Audio(url);
+      audio.volume = 0.7;
+      audio.play().catch(() => {});
+    } catch {}
+  };
 
   const showNotification = (
     type: NotificationType,
@@ -139,6 +174,33 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
     userId || "",
     userToken || ""
   );
+
+  // Load saved sound selections
+  useEffect(() => {
+    const savedSend = localStorage.getItem("chat_send_sound_id") || DEFAULT_SEND_SOUND_ID;
+    const savedReceive = localStorage.getItem("chat_receive_sound_id") || DEFAULT_RECEIVE_SOUND_ID;
+    setSendSoundId(savedSend);
+    setReceiveSoundId(savedReceive);
+  }, []);
+
+  // Play receive sound on new incoming message
+  const lastMessageRef = useRef<any>(null);
+  useEffect(() => {
+    if (!messages || messages.length === 0) return;
+    const last = messages[messages.length - 1];
+    // Avoid double-trigger on same message object
+    if (lastMessageRef.current === last) return;
+    lastMessageRef.current = last;
+
+    try {
+      const senderToken = last?.user?.token || last?.userId;
+      const isOwn = senderToken && (senderToken === userToken || senderToken === userId);
+      if (!isOwn) {
+        const url = findSoundUrlById(messageReceiveSounds, receiveSoundId) || null;
+        playSound(url);
+      }
+    } catch {}
+  }, [messages, receiveSoundId, userId, userToken]);
 
   // #region handle pagination
   const roomsPerPage = 10;
@@ -493,6 +555,9 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
     if (!newMessage.trim()) return;
     sendMessage(newMessage, userLocalTime);
     setNewMessage("");
+    // Play send sound
+    const url = findSoundUrlById(messageSendSounds, sendSoundId);
+    playSound(url);
   };
 
   const [memeModal, setMemeModal] = useState({
@@ -610,13 +675,67 @@ export function RoomSystem({ currentRoom, setCurrentRoom }: RoomSystemProps) {
               {detailData?.description}
             </p>
           </div>
-          <Button
-            className="cursor-pointer"
-            variant="outline"
-            onClick={() => handleLeaveRoom(detailData?.id)}
-          >
-            <p className="text-lg">Leave Room</p>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Dialog open={isSoundSettingsOpen} onOpenChange={setIsSoundSettingsOpen}>
+              <DialogTrigger asChild>
+                <Button className="cursor-pointer" variant="outline" size="icon" title="Chat sound settings">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Chat Sound Settings</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <span className="text-sm text-muted-foreground">Send message sound</span>
+                    <Select
+                      value={sendSoundId || undefined}
+                      onValueChange={(val) => {
+                        setSendSoundId(val);
+                        localStorage.setItem("chat_send_sound_id", val);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select send sound" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {messageSendSounds.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-sm text-muted-foreground">Receive message sound</span>
+                    <Select
+                      value={receiveSoundId || undefined}
+                      onValueChange={(val) => {
+                        setReceiveSoundId(val);
+                        localStorage.setItem("chat_receive_sound_id", val);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select receive sound" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {messageReceiveSounds.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button
+              className="cursor-pointer"
+              variant="outline"
+              onClick={() => handleLeaveRoom(detailData?.id)}
+            >
+              <p className="text-lg">Leave Room</p>
+            </Button>
+          </div>
         </div>
 
         {/* Current Track */}
