@@ -11,12 +11,19 @@ import { RoomSystem, type Room } from "@/components/room-system"
 import { TaskManager } from "@/components/task-manager"
 import { Play, Users, CheckSquare, Coffee, Github, Send, Linkedin, HandCoins, Bug } from "lucide-react"
 import type { Song } from "@/data/music-playlist"
+import { NotificationModal } from "@/components/notification-modal"
 
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState<"music" | "rooms" | "tasks">("music")
   const [currentTrack, setCurrentTrack] = useState<Song | null>(null)
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null)
   const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false)
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: "info" as "success" | "error" | "info" | "warning",
+    title: "",
+    message: "",
+  })
 
   const musicPlayerRef = useRef<any>(null)
 
@@ -94,7 +101,15 @@ export default function HomePage() {
               </Button>
               <Button
                 variant={activeSection === "tasks" ? "default" : "ghost"}
-                onClick={() => setActiveSection("tasks")}
+                onClick={() => {
+                  setActiveSection("tasks")
+                  setNotification({
+                    isOpen: true,
+                    type: "info",
+                    title: "Coming soon!",
+                    message: "Tasks feature coming soon (*￣3￣)╭",
+                  })
+                }}
                 className={`cursor-pointer gap-2 font-pixel text-lg ${
                   activeSection !== "tasks" ? "text-primary hover:text-primary-foreground" : ""
                 }`}
@@ -197,6 +212,14 @@ export default function HomePage() {
       </div>
 
       <MusicPlayer onTrackChange={setCurrentTrack} ref={musicPlayerRef} />
+
+      <NotificationModal
+        isOpen={notification.isOpen}
+        onClose={() => setNotification({ ...notification, isOpen: false })}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+      />
     </div>
   )
 }
