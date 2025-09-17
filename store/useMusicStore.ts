@@ -33,10 +33,11 @@ type StoreState = SyncedMusicState & {
   isOwner: boolean;
   isInRoom: boolean;
   emitters: SocketEmitters | null; // Giờ đây nó sẽ chấp nhận kiểu mới
+  currentTrack: Song | null;
 
   // Actions
   setRoomSyncState: (
-    state: Partial<SyncedMusicState & { isOwner: boolean; isInRoom: boolean }>
+    state: Partial<SyncedMusicState & { isOwner: boolean; isInRoom: boolean; currentTrack?: Song | null }>
   ) => void;
   setSocketEmitters: (emitters: SocketEmitters) => void;
   clearRoomSyncState: () => void;
@@ -56,9 +57,10 @@ export const useRoomMusicStore = create<StoreState>((set) => ({
   isOwner: false,
   isInRoom: false,
   emitters: null,
+  currentTrack: null,
 
   setRoomSyncState: (state) => set((prevState) => ({ ...prevState, ...state })),
   setSocketEmitters: (emitters) => set({ emitters }), // Sẽ không còn lỗi ở đây
   clearRoomSyncState: () =>
-    set({ ...initialState, isOwner: false, isInRoom: false, emitters: null }),
+    set({ ...initialState, isOwner: false, isInRoom: false, emitters: null, currentTrack: null }),
 }));

@@ -66,7 +66,6 @@ export const AmbientSounds = forwardRef<AmbientSoundsRef>((_, ref) => {
       prev.map((s) => {
         if (s.id === id) {
           const audio = audioRefs.current[id];
-          console.log("sounds -==> ", audio)
           if (audio) {
             if (s.isPlaying) audio.pause();
             else audio.play();

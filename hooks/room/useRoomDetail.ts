@@ -1,6 +1,6 @@
 import endpoint from "@/services/endpoint";
 import rootApi from "@/services/root.api";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export interface roomDetailDto {
   token: string;
@@ -28,4 +28,21 @@ export const useRoomDetailMutation = () => {
     isError,
     onDetailRoom: mutateAsync
   }
+};
+
+export const useRoomDetailQuery = (token: string | null, roomId: string | null) => {
+  return useQuery({
+    queryKey: ["room_detail", roomId],
+    queryFn: async () => {
+      if (!token || !roomId) return null;
+      const res = await rootApi.post(endpoint.room_detail, {
+        token,
+        roomId,
+        dto: {},
+      });
+      return res.data as any;
+    },
+    enabled: !!token && !!roomId,
+    staleTime: 0,
+  });
 };

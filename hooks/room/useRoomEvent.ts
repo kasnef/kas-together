@@ -16,15 +16,23 @@ export function useRoomEvents(
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    socket.connect();
-  }, []);
-  
-  useEffect(() => {
     if (!socket) return;
 
     const handleRoomCreated = (newRoom: any) => {
+      console.log("Room created", newRoom);
       queryClient.invalidateQueries({
         queryKey: ["room", 0, 10],
+      });
+    };
+
+    const handleRoomListUpdated = (data: {
+      roomId: string;
+      action: string;
+    }) => {
+      console.log("Room list updated", data);
+      queryClient.invalidateQueries({
+        queryKey: ["room", 0, 10],
+        refetchType: "active",
       });
     };
 
@@ -33,6 +41,7 @@ export function useRoomEvents(
       setCurrentRoom(null);
       queryClient.invalidateQueries({
         queryKey: ["room", 0, 10],
+        refetchType: "active",
       });
       showNotification(
         "warning",
@@ -41,21 +50,33 @@ export function useRoomEvents(
       );
     };
 
+    const handleMemberJoined = (data: { roomId: string; member: any }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["room_detail", data.roomId],
+      });
+    };
+
     const handleMemberLeft = (data: { roomId: string; memberId: string }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["room_detail", data.roomId],
+      });
       if (data.memberId === userId) {
         localStorage.removeItem("current_room");
         setCurrentRoom(null);
       }
     };
-
     socket.on("room:created", handleRoomCreated);
+    socket.on("room:list_updated", handleRoomListUpdated);
     socket.on("room:deleted", handleRoomDeleted);
-    socket.on("room:member_left", handleMemberLeft);
+    socket.on("room:user_join", handleMemberJoined);
+    socket.on("room:user_left", handleMemberLeft);
 
     return () => {
       socket.off("room:created", handleRoomCreated);
+      socket.off("room:list_updated", handleRoomListUpdated);
       socket.off("room:deleted", handleRoomDeleted);
-      socket.off("room:member_left", handleMemberLeft);
+      socket.off("room:user_join", handleMemberJoined);
+      socket.off("room:user_left", handleMemberLeft);
     };
   }, [userId, setCurrentRoom, showNotification]);
 }

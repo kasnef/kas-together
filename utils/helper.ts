@@ -12,4 +12,9 @@ export class Helper {
 
     return isoString;
   }
+
+  static truncate(str: string, maxLength = 100): string {
+    if (!str) return "";
+    return str.length > maxLength ? str.slice(0, maxLength) + "..." : str;
+  }
 }
